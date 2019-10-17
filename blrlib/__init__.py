@@ -15,6 +15,7 @@ from .core.mat import zmatrix
 from .core.mat import matrix
 from .core.mat import lrmatrix
 from .core.mat import blrmatrix
+from .core.mat import build_blrmatrix
 
 __all__ = []
 __all__.extend(core.__all__)
