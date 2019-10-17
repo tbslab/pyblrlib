@@ -6,7 +6,7 @@ from re import search
 PACKAGE_NAME = "blrlib"
 
 with open(join(PACKAGE_NAME, "__init__.py"), encoding="utf-8") as f:
-    version = search(r"__version__\s+=\s+(.*)", f.read()).group(1)
+    version = search(r'__version__\s+=\s+"(.*)"', f.read()).group(1)
 
 with open("README.rst", encoding="utf-8") as f:
     readme = f.read()
