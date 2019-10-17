@@ -82,4 +82,4 @@ def _mbgs_for_blrmatrix(blrmat):
             R[j, k] = (Qj.T @ _blrmat[:, k]).A[0, 0]
             _blrmat.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
 
-    return Q, R
+    return blrmatrix(Q), blrmatrix(R)
