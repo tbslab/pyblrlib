@@ -70,14 +70,15 @@ def _mbgs_for_blrmatrix(blrmat):
         The upper triangular matrix.
     """
     _blrmat = blrmatrix(blrmat.A.copy())
-    Q = numpy.full(_blrmat.shape, None)
-    R = numpy.full(_blrmat.shape, None)
-    for index in numpy.ndindex(_blrmat.shape):
+    min_nb = min(_blrmat.shape)
+    Q = numpy.full((_blrmat.shape[0], min_nb), None)
+    R = numpy.full((min_nb, _blrmat.shape[1]), None)
+    for index in numpy.ndindex(R.shape):
         R[index] = zmatrix(_blrmat.A[index].shape)
 
-    for j in range(_blrmat.shape[1]):
+    for j in range(min_nb):
         Q[:, j], R[j, j] = _tsqr_for_blrmatrix(_blrmat[:, j])
-        for k in range(j + 1, _blrmat.shape[1]):
+        for k in range(j + 1, min_nb):
             Qj = blrmatrix(Q[:, j:j + 1])
             R[j, k] = (Qj.T @ _blrmat[:, k]).A[0, 0]
             _blrmat.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
