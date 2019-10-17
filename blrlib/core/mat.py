@@ -909,7 +909,9 @@ def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
         cshapes.append(mat.shape[1] // nb + mat.shape[1] % nb)
         rshapes = numpy.array(rshapes, dtype=int)
         cshapes = numpy.array(cshapes, dtype=int)
-    if isinstance(structure, (list, tuple)) and len(structure) == 2:
+    if isinstance(structure, (list, tuple)):
+            if len(structure) != 2:
+                raise ValueError("'structure' must has two sequences.")
         rshapes = numpy.array(structure[0], dtype=int)
         cshapes = numpy.array(structure[1], dtype=int)
         if not rshapes.ndim == cshapes.ndim == 1:
