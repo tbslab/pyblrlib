@@ -4,4 +4,6 @@
     =============
     The Subpackage for blrmat package.
 """
-__all__ = []
+from .factorization import qr
+
+__all__ = ["qr"]
