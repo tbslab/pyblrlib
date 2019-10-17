@@ -818,10 +818,10 @@ class blrmatrix(object):
     def to_matrix(self):
         """Return self as matrix object."""
         contents = []
-        for i in range(self.shape[0]):
-            contents.append([])
-            for j in range(self.shape[1]):
-                contents.append(self.A[i, j])
+        for index in numpy.ndindex(self.shape):
+            if not index[1]:
+                contents.append([])
+            contents[index[0]].append(self.A[index])
         return matrix(numpy.block(contents))
 
 
