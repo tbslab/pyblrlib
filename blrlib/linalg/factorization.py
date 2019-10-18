@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy
-from blrlib.core.mat import zmatrix, matrix, lrmatrix, blrmatrix
+from ..core.mat import zmatrix
+from ..core.mat import matrix
+from ..core.mat import lrmatrix
+from ..core.mat import blrmatrix
 
 
 def qr(mat):
