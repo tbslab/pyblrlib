@@ -32,26 +32,28 @@ def _tsqr_for_blrmatrix(blrmat):
     R : matrix
         The upper triangular matrix.
     """
-    Q = numpy.full(blrmat.shape[0], None)
-    B = []
+    nb = blrmat.shape[0]
+    X = blrmat
+    Q = numpy.full(nb, None)
+    B = numpy.full(nb, None)
 
-    for i in range(blrmat.shape[0]):
-        if isinstance(blrmat.A[i, 0], lrmatrix):
-            Qi, Ri = numpy.linalg.qr(blrmat.A[i, 0].U)
+    for i in range(nb):
+        if isinstance(X.A[i, 0], lrmatrix):
+            Qi, Ri = numpy.linalg.qr(X.A[i, 0].U)
             Q[i] = Qi
-            B.append(Ri @ blrmat.A[i, 0].V)
+            B[i] = Ri @ X.A[i, 0].V
         else:
-            B.append(blrmat.A[i, 0])
+            B[i] = X.A[i, 0]
 
     Qb, R = numpy.linalg.qr(numpy.vstack(B))
     rs, re = 0, 0
 
-    for i in range(blrmat.shape[0]):
-        if isinstance(blrmat.A[i, 0], lrmatrix):
-            rs, re = re, re + blrmat.A[i, 0].rank
+    for i in range(nb):
+        if isinstance(X.A[i, 0], lrmatrix):
+            rs, re = re, re + X.A[i, 0].rank
             Q[i] = lrmatrix((Q[i], Qb[rs:re, :]))
         else:
-            rs, re = re, re + blrmat.A[i, 0].shape[0]
+            rs, re = re, re + X.A[i, 0].shape[0]
             Q[i] = matrix(Qb[rs:re, :])
 
     return Q, matrix(R)
@@ -72,18 +74,21 @@ def _mbgs_for_blrmatrix(blrmat):
     R : blrmatrix
         The upper triangular matrix.
     """
-    _blrmat = blrmatrix(blrmat.A.copy())
-    min_nb = min(_blrmat.shape)
-    Q = numpy.full((_blrmat.shape[0], min_nb), None)
-    R = numpy.full((min_nb, _blrmat.shape[1]), None)
-    for index in numpy.ndindex(R.shape):
-        R[index] = zmatrix(_blrmat.A[index].shape)
+    nb = min(blrmat.shape)
+    X = blrmatrix(blrmat.A.copy())
+    Q = numpy.full((X.shape[0], nb), None)
+    R = numpy.full((nb, X.shape[1]), None)
 
-    for j in range(min_nb):
-        Q[:, j], R[j, j] = _tsqr_for_blrmatrix(_blrmat[:, j])
-        for k in range(j + 1, min_nb):
+    for index in numpy.ndindex(R.shape):
+        rshape = X.A[index[0], index[0]].shape[1]
+        cshape = X.A[index].shape[1]
+        R[index] = zmatrix((rshape, cshape))
+
+    for j in range(nb):
+        Q[:, j], R[j, j] = _tsqr_for_blrmatrix(X[:, j])
+        for k in range(j + 1, nb):
             Qj = blrmatrix(Q[:, j:j + 1])
-            R[j, k] = (Qj.T @ _blrmat[:, k]).A[0, 0]
-            _blrmat.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
+            R[j, k] = (Qj.T @ X[:, k]).A[0, 0]
+            X.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
 
     return blrmatrix(Q), blrmatrix(R)
