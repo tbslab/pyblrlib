@@ -45,7 +45,13 @@ def _tsqr_for_blrmatrix(blrmat):
         else:
             B[i] = X.A[i, 0]
 
-    Qb, R = numpy.linalg.qr(numpy.vstack(B))
+    B = numpy.vstack(B)
+
+    if B.shape[0] < B.shape[1]:
+        Z = numpy.zeros((B.shape[1] - B.shape[0], B.shape[1]))
+        B = numpy.vstack([B, Z])
+
+    Qb, R = numpy.linalg.qr(B)
     rs, re = 0, 0
 
     for i in range(nb):
@@ -74,10 +80,11 @@ def _mbgs_for_blrmatrix(blrmat):
     R : blrmatrix
         The upper triangular matrix.
     """
-    nb = min(blrmat.shape)
+    nb = blrmat.shape[1]
+    nb_min = min(blrmat.shape)
     X = blrmatrix(blrmat.A.copy())
-    Q = numpy.full((X.shape[0], nb), None)
-    R = numpy.full((nb, X.shape[1]), None)
+    Q = numpy.full((X.shape[0], nb_min), None)
+    R = numpy.full((nb_min, X.shape[1]), None)
 
     for index in numpy.ndindex(R.shape):
         rshape = X.A[index[0], index[0]].shape[1]
@@ -86,9 +93,13 @@ def _mbgs_for_blrmatrix(blrmat):
 
     for j in range(nb):
         Q[:, j], R[j, j] = _tsqr_for_blrmatrix(X[:, j])
+
         for k in range(j + 1, nb):
             Qj = blrmatrix(Q[:, j:j + 1])
             R[j, k] = (Qj.T @ X[:, k]).A[0, 0]
             X.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
+
+        if j >= nb_min - 1:
+            return blrmatrix(Q), blrmatrix(R)
 
     return blrmatrix(Q), blrmatrix(R)
