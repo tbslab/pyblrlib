@@ -23,4 +23,4 @@ __all__.extend(io.__all__)
 __all__.extend(linalg.__all__)
 __all__.extend(vis.__all__)
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"

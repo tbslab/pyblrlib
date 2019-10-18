@@ -24,8 +24,6 @@ setup(
     author="tbs-lab",
     author_email="tsubasa.i.0516@gmail.com",
     url="https://tbs-lab.github.io",
-    project_urls={},
-    packages=find_packages(exclude=('tests', 'docs')),
-    package_dir={"": PACKAGE_NAME},
+    packages=find_packages(exclude=("tests", "docs")),
     install_requires=["numpy"],
 )
