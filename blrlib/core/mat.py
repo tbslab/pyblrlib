@@ -7,20 +7,15 @@ from .. import linalg
 class zmatrix(object):
     """A zero matrix object.
 
-    Parameters
-    ----------
-    shape : tuple(int, int)
-        A matrix shape.
-
     Attributes
     ----------
-    T : matrix
+    T: zmatrix
         Transpose of self.
-    shape : tuple(int, int)
+    shape: tuple of int
         Shape of self.
-    nbytes : int
+    nbytes: int
         total bytes consumed by the elements of self.
-    fnorm : float
+    fnorm: float
         Frobenius norm of self.
 
     Examples
@@ -34,7 +29,13 @@ class zmatrix(object):
     """
 
     def __init__(self, shape):
-        """Initialize self."""
+        """Initialize self.
+
+        Parameters
+        ----------
+        shape: tuple of int
+            A matrix shape.
+        """
         self._shape = shape
 
         if not (isinstance(shape, tuple) and len(shape) == 2):
@@ -166,24 +167,19 @@ class zmatrix(object):
 class matrix(object):
     """A matrix object utilizing a numpy.ndarray object.
 
-    Parameters
-    ----------
-    obj : array like
-        2-dimensional array object.
-
     Attributes
     ----------
-    A : numpy.ndarray
+    A: numpy.narray
         Self as numpy.ndarray object.
-    T : matrix
+    T: matrix
         Transpose of self.
-    I : matrix
+    I: matrix
         The (multiplicative) inverse of invertible self.
-    shape : tuple(int, int)
+    shape: tuple of int
         Shape of self.
-    nbytes : int
+    nbytes: int
         total bytes consumed by the elements of self.
-    fnorm : float
+    fnorm: float
         Frobenius norm of self.
 
     Examples
@@ -199,11 +195,17 @@ class matrix(object):
     """
 
     def __init__(self, obj):
-        """Initialize self."""
+        """Initialize self.
+        
+        Parameters
+        ----------
+        obj: array_like
+            2 dimensional array object.
+        """
         self._content = numpy.array(obj)
 
         if self._content.ndim != 2:
-            raise ValueError("'matrix' must be 2-dimensional")
+            raise ValueError("'matrix' must be 2 dimensional")
         if self._content.dtype not in (numpy.int, numpy.float, numpy.complex):
             raise TypeError("valid type instances must be set")
 
@@ -395,43 +397,23 @@ class matrix(object):
 class lrmatrix(object):
     """A low rank (LR) matrix object.
 
-    Parameters
-    ----------
-    obj : array like or tuple(array like, array like)
-        If you choose
-            1. array like,
-                you get the appriximation of this object.
-            2. tuple(array like, array like),
-                you get the LR matrix which have left matrix (tuple[0]) and
-                right matrix (tuple[1]).
-    mathod : str, optional
-        A approximation method name. You can choose it from following list:
-            1. svd
-                Singular Value Decomposition Method.
-            2. aca
-                Adaptive Cross Approximation.
-    eps : float, optional
-        Numerical value for controlled accuracy.
-    rank : int, optional
-        Numerical rank for fixed rank approximation.
-
     Attributes
     ----------
-    U : matrix
+    U: matrix
         Left matrix of self as matrix object.
-    V : matrix
+    V: matrix
         Right matrix of self as matrix object.
-    T : lrmatrix
+    T: lrmatrix
         Transpose of self.
-    shape : tuple(int, int)
+    shape: tuple of int
         Shape of self.
-    nbytes : int
+    nbytes: int
         total bytes consumed by the elements of self.
-    fnorm : float
+    fnorm: float
         Frobenius norm of self.
-    eps : float, optional
+    eps: float or None
         Numerical value for controlled accuracy.
-    rank : int, optional
+    rank: int
         Numerical rank for fixed rank approximation.
 
     Examples
@@ -464,8 +446,32 @@ class lrmatrix(object):
     [[3, 4]]
     """
 
-    def __init__(self, obj, method=None, eps=None, rank=None):
-        """Initialize self."""
+    def __init__(self, obj, method="svd", eps=None, rank=None):
+        """Initialize self.
+
+        Parameters
+        ----------
+        obj: array_like or tuple of array_like
+            If you choose,
+
+            1. array_like
+                you get the appriximation of this object.
+            2. tuple of array_like
+                you get the LR matrix which have left matrix:tuple[0] and
+                right matrix:tuple[1].
+        method: str, default 'svd'
+            A approximation method name. You can choose it from following
+            list.
+
+            1. 'svd'
+                Singular Value Decomposition Method.
+            2. 'aca'
+                Adaptive Cross Approximation.
+        eps: float, default None
+            Numerical value for controlled accuracy.
+        rank: int, default None
+            Numerical rank for fixed rank approximation.
+        """
         self._eps = eps
 
         if isinstance(obj, tuple):
@@ -479,8 +485,6 @@ class lrmatrix(object):
                 self._left, self._right = linalg.svda(obj, eps, rank)
             else:
                 raise NotImplementedError("such method does not exist")
-        else:
-            raise ValueError("you must choose approximation method")
 
     @property
     def U(self):
@@ -698,38 +702,39 @@ class lrmatrix(object):
 class blrmatrix(object):
     """A block low rank (BLR) matrix object.
 
-    Parameters
-    ----------
-    obj : numpy.ndarray
-        2-dimensional numpy.ndarray. Each element must be either matrix or
-        lrmatrix object.
-
     Attributes
     ----------
-    A : numpy.ndarray
+    A: numpy.ndarray
         Self as numpy.ndarray object.
-    T : blrmatrix
+    T: blrmatrix
         Transpose of self.
-    I : blrmatrix
+    I: blrmatrix
         The (multiplicative) inverse of invertible self.
-    shape : tuple(int, int)
+    shape: tuple of int
         Shape of self.
-    nbytes : int
+    nbytes: int
         total bytes consumed by the elements of self.
-    fnorm : float
+    fnorm: float
         Frobenius norm of self.
 
     See also
     --------
-    build_blrmatrix : Generate a blrmatrix instance.
+    build_blrmatrix: Generate a blrmatrix instance.
     """
 
     def __init__(self, obj):
-        """Initialize self."""
+        """Initialize self.
+
+        Parameters
+        ----------
+        obj: array_like
+            2 dimensional array object. Each element must be either
+            matrix, lrmatrix or zmatrix object.
+        """
         self._block = numpy.array(obj, dtype=object)
 
         if self._block.ndim != 2:
-            raise ValueError("'blrmatrix' must be 2-dimensional")
+            raise ValueError("'blrmatrix' must be 2 dimensional")
         for index in numpy.ndindex(self._block.shape):
             if not isinstance(self._block[index], (matrix, lrmatrix, zmatrix)):
                 raise TypeError("valid type instances must be set")
@@ -901,32 +906,36 @@ class blrmatrix(object):
         return matrix(numpy.block(self.A.tolist()))
 
 
-def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=None):
+def build_blrmatrix(mat, structure, indices=[], method="svd", eps=None, rank=None):
     """Return block low rank (BLR) Matrix.
 
     Parameters
     ----------
-    mat : array like
-        2-dimensional array object.
-    structure : int, list or tuple of row and column block size
-        This decide a structure of BLR matrix. If you choose
-            1. int,
-                you get a regular block structure.
-            2. list or tuple of row and column block size,
-                you get a irregular block structure as you specified.
-    indices : list or tuple of tuple(row index, column index), optional
-        This is a block index list which specifies which block should be matrix
-        object. If you do not give this parameter, this function will generate
-        normal block matrix, although that instance is blrmatrix object.
-    mathod : str, optionnal
-        A approximation method name. You can choose it from following list:
-            1. svd
-                Singular Value Decomposition Method.
-            2. aca
-                Adaptive Cross Approximation.
-    eps : float, optional
+    mat: array_like
+        2 dimensional array object.
+    structure: int or list of list 
+        This decide a structure of BLR matrix. If you choose,
+
+        1. int,
+            you get a regular block structure.
+        2. list of list 
+            you get a irregular block structure as you specified.
+    indices: list of tuple, default [] 
+        This is a list of tuple which specifies which block index should
+        be matrix object. If you do not give this parameter,
+        this function will generate normal block matrix, 
+        although that instance is blrmatrix object.
+    method: str, default 'svd' 
+        A approximation method name. You can choose it from following
+        list.
+
+        1. 'svd'
+            Singular Value Decomposition Method.
+        2. 'aca'
+            Adaptive Cross Approximation.
+    eps: float, default None
         Numerical value for controlled accuracy.
-    rank : int, optional
+    rank: int, default None
         Numerical rank for fixed rank approximation.
 
     Returns
@@ -954,9 +963,9 @@ def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=No
     (9, 9): matrix(10x10)
 
     You can generate BLR matrix which has a irregular block structure as
-    following. In practice, you don't need to fix sizes like structure[0] and
-    structure[1] are to be same size, but you need to fix sizes like these twos
-    are compatible with obj.shape.
+    following. In practice, you don't need to fix sizes
+    like structure[0] and structure[1] are to be same size, but you need
+    to fix sizes like these twos are compatible with obj.shape.
 
     >>> import numpy as np
     >>> import blrlib as bl
@@ -980,7 +989,7 @@ def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=No
     if not isinstance(mat, numpy.ndarray):
         mat = numpy.array(mat)
     if mat.ndim != 2:
-        raise ValueError("'mat' must be 2-dimensional")
+        raise ValueError("'mat' must be 2 dimensional")
     if isinstance(structure, int):
         nb = structure
         if nb < 1:
@@ -991,24 +1000,17 @@ def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=No
         cshapes.append(mat.shape[1] // nb + mat.shape[1] % nb)
         rshapes = numpy.array(rshapes, dtype=int)
         cshapes = numpy.array(cshapes, dtype=int)
-    if isinstance(structure, (list, tuple)):
+    elif isinstance(structure, list):
         if len(structure) != 2:
-            raise ValueError("'structure' must has two sequences.")
+            raise ValueError("'structure' must has two list")
         rshapes = numpy.array(structure[0], dtype=int)
         cshapes = numpy.array(structure[1], dtype=int)
         if not rshapes.ndim == cshapes.ndim == 1:
             raise ValueError("'structure' elements must be 1-dimensional")
         if not mat.shape == (rshapes.sum(), cshapes.sum()):
             raise ValueError("'structure' must be compatible with 'mat.shape'")
-    if indices:
-        if not isinstance(indices, (list, tuple)):
-            raise ValueError("'indices' must be a list or tuple")
-        if not indices:
-            raise ValueError("list or tuple must not be empty")
-        if not isinstance(indices[0], tuple):
-            raise ValueError("'indices' elements must be tuple(row, column)")
     else:
-        indices = ()
+        raise ValueError("'structure' must be int or list of list")
 
     block = numpy.full((rshapes.size, cshapes.size), None)
 

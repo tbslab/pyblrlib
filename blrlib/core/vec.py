@@ -7,32 +7,39 @@ from .. import core
 class vector(object):
     """A vector object utilizing a numpy.ndarray object.
 
-    Arguments
-    ---------
-    obj : array like
-
     Attributes
     ----------
-    a : numpy.ndarray
+    a: numpy.ndarray
         Self as numpy.ndarray object.
-    T : vector
+    T: vector
         Transpose of self.
-    shape : tuple(int, int)
+    shape: tuple of int
         Shape of self.
-    size : int
+    size: int
         Number of elements in self.
-    nbytes : int
+    nbytes: int
         total bytes consumed by the elements of self.
-    norm : float
+    norm: float
         Euclidean norm of self.
 
     Examples
     --------
-    Ex.1 : Make the vector instance.
+    Make the vector instance.
+
+    >>> import blrlib as bl
+    >>> a = bl.vector([1, 2, 3])
+    >>> a 
+
     """
 
     def __init__(self, obj):
-        """Initialize self."""
+        """Initialize self.
+
+        Parameters
+        ----------
+        obj: array_like
+            1 or 2 dimensional array object.
+        """
         self._content = numpy.array(obj)
 
         if self._content.ndim == 0:

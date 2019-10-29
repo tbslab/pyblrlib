@@ -8,14 +8,14 @@ def qr(mat):
 
     Parameters
     ----------
-    mat : blrmatrix or matrix
+    mat: blrmatrix or matrix
         A matrix to be factored.
 
     Returns
     -------
-    Q : blrmatrix or matrix
+    Q: blrmatrix or matrix
         A matrix with orthonormal columns.
-    R : blrmatrix or matrix
+    R: blrmatrix or matrix
         The upper triangular matrix.
     """
     if isinstance(mat, (core.matrix, numpy.ndarray)):
@@ -31,15 +31,15 @@ def _tsqr_for_blrmatrix(blrmat):
 
     Parameters
     ----------
-    blrmat : blrmatrix
-        A matrix to be factored. The shape must be (nb, 1).
+    blrmat: blrmatrix
+        A matrix to be factored. The shape must be (rows, 1).
 
     Returns
     -------
-    Q : numpy.ndarray
-        A matrix with orthonormal columns. A list of matrix and lrmatrix object.
+    Q: numpy.ndarray
+        A matrix with orthonormal columns. A list of matrix and lrmatrix
         objects.
-    R : matrix
+    R: matrix
         The upper triangular matrix.
     """
     nb = blrmat.shape[0]
@@ -80,14 +80,14 @@ def _mbgs_for_blrmatrix(blrmat):
 
     Parameters
     ----------
-    blrmat : blrmatrix
+    blrmat: blrmatrix
         A matrix to be factored.
 
     Returns
     -------
-    Q : blrmatrix
+    Q: blrmatrix
         A matrix with orthonormal columns.
-    R : blrmatrix
+    R: blrmatrix
         The upper triangular matrix.
     """
     nb = blrmat.shape[1]
