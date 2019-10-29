@@ -29,7 +29,10 @@ class vector(object):
     >>> import blrlib as bl
     >>> a = bl.vector([1, 2, 3])
     >>> a 
-
+    vector
+    [[1]
+     [2]
+     [3]]
     """
 
     def __init__(self, obj):
