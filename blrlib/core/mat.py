@@ -474,7 +474,7 @@ class lrmatrix(object):
 
             if self._left.shape[1] != self._right.shape[0]:
                 raise ValueError("shape must be aligned")
-        if method:
+        elif method:
             if method.lower() == "svd":
                 self._left, self._right = linalg.svda(obj, eps, rank)
             else:
@@ -898,12 +898,7 @@ class blrmatrix(object):
 
     def to_matrix(self):
         """Return self as matrix object."""
-        contents = []
-        for index in numpy.ndindex(self.shape):
-            if not index[1]:
-                contents.append([])
-            contents[index[0]].append(self.A[index])
-        return matrix(numpy.block(contents))
+        return matrix(numpy.block(self.A.tolist()))
 
 
 def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=None):
