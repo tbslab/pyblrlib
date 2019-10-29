@@ -7,8 +7,8 @@ from .. import linalg
 class zmatrix(object):
     """A zero matrix object.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     shape : tuple(int, int)
         A matrix shape.
 
@@ -22,6 +22,15 @@ class zmatrix(object):
         total bytes consumed by the elements of self.
     fnorm : float
         Frobenius norm of self.
+
+    Examples
+    --------
+    Make the zmatrix instance.
+    
+    >>> import blrlib as bl
+    >>> A = bl.zmatrix((2, 2))
+    >>> print(A)
+    zmatrix(2x2)
     """
 
     def __init__(self, shape):
@@ -157,8 +166,8 @@ class zmatrix(object):
 class matrix(object):
     """A matrix object utilizing a numpy.ndarray object.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     obj : array like
         2-dimensional array object.
 
@@ -179,7 +188,8 @@ class matrix(object):
 
     Examples
     --------
-    Ex.1 : Make the matrix instance.
+    Make the matrix instance.
+
     >>> import blrlib as bl
     >>> A = bl.matrix([[1, 2], [3, 4]])
     >>> A
@@ -385,8 +395,8 @@ class matrix(object):
 class lrmatrix(object):
     """A low rank (LR) matrix object.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     obj : array like or tuple(array like, array like)
         If you choose
             1. array like,
@@ -426,7 +436,8 @@ class lrmatrix(object):
 
     Examples
     --------
-    Ex.1 : Make the lrmatrix instance using SVD method.
+    Make the lrmatrix instance using SVD method.
+
     >>> import blrlib as bl
     >>> A = bl.matrix([[1, 2], [3, 4]])
     >>> X = bl.lrmatrix(A, mathod="svd", rank=1)
@@ -438,7 +449,8 @@ class lrmatrix(object):
     right
     [[-0.57604844 -0.81741556]]
 
-    Ex.1 : Make the lrmatrix instance.
+    Make the lrmatrix instance.
+
     >>> import blrlib as bl
     >>> A = bl.matrix([[1], [2]])
     >>> B = bl.matrix([[3, 4]])
@@ -686,8 +698,8 @@ class lrmatrix(object):
 class blrmatrix(object):
     """A block low rank (BLR) matrix object.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     obj : numpy.ndarray
         2-dimensional numpy.ndarray. Each element must be either matrix or
         lrmatrix object.
@@ -897,8 +909,8 @@ class blrmatrix(object):
 def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=None):
     """Return block low rank (BLR) Matrix.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     mat : array like
         2-dimensional array object.
     structure : int, list or tuple of row and column block size
@@ -909,7 +921,7 @@ def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=No
                 you get a irregular block structure as you specified.
     indices : list or tuple of tuple(row index, column index), optional
         This is a block index list which specifies which block should be matrix
-        object. If you do not give this argument, this function will generate
+        object. If you do not give this parameter, this function will generate
         normal block matrix, although that instance is blrmatrix object.
     mathod : str, optionnal
         A approximation method name. You can choose it from following list:
@@ -929,9 +941,9 @@ def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=No
 
     Examples
     --------
-    Ex01 :
     You can generate the BLR matrix which has LR matrices
     at non-diagonals as following.
+
     >>> import numpy as np
     >>> import blrlib as bl
     >>> A = np.random.randint(1, 5, (100, 100))
@@ -946,11 +958,11 @@ def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=No
     ...
     (9, 9): matrix(10x10)
 
-    Ex02 :
     You can generate BLR matrix which has a irregular block structure as
     following. In practice, you don't need to fix sizes like structure[0] and
     structure[1] are to be same size, but you need to fix sizes like these twos
     are compatible with obj.shape.
+
     >>> import numpy as np
     >>> import blrlib as bl
     >>> A = np.random.randint(1, 5, (100, 100))

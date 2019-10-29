@@ -4,7 +4,20 @@ from .. import core
 
 
 def qr(mat):
-    """QR factorization."""
+    """Return QR factorization for blrmatrix or matrix.
+
+    Parameters
+    ----------
+    mat : blrmatrix or matrix
+        A matrix to be factored.
+
+    Returns
+    -------
+    Q : blrmatrix or matrix
+        A matrix with orthonormal columns.
+    R : blrmatrix or matrix
+        The upper triangular matrix.
+    """
     if isinstance(mat, (core.matrix, numpy.ndarray)):
         q, r = numpy.linalg.qr(mat)
         return core.matrix(q), core.matrix(r)
@@ -14,10 +27,10 @@ def qr(mat):
 
 
 def _tsqr_for_blrmatrix(blrmat):
-    """Tall-Skinny QR factorization for BLR matrices.
+    """Return Tall-Skinny QR factorization for BLR matrices.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     blrmat : blrmatrix
         A matrix to be factored. The shape must be (nb, 1).
 
@@ -63,10 +76,10 @@ def _tsqr_for_blrmatrix(blrmat):
 
 
 def _mbgs_for_blrmatrix(blrmat):
-    """Modified block Gram-Schmidt algorithm for BLR matrices.
+    """Return Modified block Gram-Schmidt algorithm for BLR matrices.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     blrmat : blrmatrix
         A matrix to be factored.
 

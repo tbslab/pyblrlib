@@ -4,10 +4,10 @@ from .. import core
 
 
 def svda(mat, eps=None, rank=None):
-    """Return two matrices approximated by using singular value decomposition (SVD).
+    """Return two matrices approximated by using singular value decomposition.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     mat : array like
         A matrix object which is of array like.
     eps : float, optional
@@ -26,10 +26,12 @@ def svda(mat, eps=None, rank=None):
         return _svda_fixed_rank(mat, rank)
     if eps:
         return _svda_controlled_accuracy(mat, eps)
+    else:
+        raise ValueError("'eps' or 'rank' parameter must be given")
 
 
 def _svda_controlled_accuracy(mat, eps):
-    """Return two matrices approximated by using singular value decomposition (SVD).
+    """Return two matrices approximated by using singular value decomposition.
 
         This is a approximation for controlled accuracy.
     """
@@ -44,7 +46,7 @@ def _svda_controlled_accuracy(mat, eps):
 
 
 def _svda_fixed_rank(mat, rank):
-    """Return two matrices approximated by using singular value decomposition (SVD).
+    """Return two matrices approximated by using singular value decomposition.
 
         This is a approximation for fixed rank.
     """
@@ -53,10 +55,10 @@ def _svda_fixed_rank(mat, rank):
 
 
 def aca(mat, eps=None, rank=None):
-    """Return two matrices approximated by using adaptive cross approximation (ACA).
+    """Return two matrices approximated by using adaptive cross approximation.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     mat : array like
         A matrix object which is of array like.
     eps : float, optional
@@ -75,10 +77,12 @@ def aca(mat, eps=None, rank=None):
         return _aca_fixed_rank(mat, rank)
     if eps:
         return _aca_controlled_accuracy(mat, eps)
+    else:
+        raise ValueError("'eps' or 'rank' parameter must be given")
 
 
 def _aca_controlled_accuracy(mat, eps):
-    """Return two matrices approximated by using adaptive cross approximation (ACA).
+    """Return two matrices approximated by using adaptive cross approximation.
 
         This is a approximation for controlled accuracy.
     """
@@ -86,7 +90,7 @@ def _aca_controlled_accuracy(mat, eps):
 
 
 def _aca_fixed_rank(mat, rank):
-    """Return two matrices approximated by using adaptive cross approximation (ACA).
+    """Return two matrices approximated by using adaptive cross approximation.
 
         This is a approximation for fixed rank.
     """
