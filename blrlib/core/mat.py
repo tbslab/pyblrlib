@@ -59,6 +59,86 @@ class zmatrix(object):
         """Return the informal string representation of this object."""
         return "zmatrix({0[0]}x{0[1]})".format(self.shape)
 
+    def __neg__(self):
+        """Return -self"""
+        return self
+
+    def __pos__(self):
+        """Return +self"""
+        return self
+
+    def __add__(self, other):
+        """Return self + other."""
+        if isinstance(other, zmatrix):
+            if self.shape != other.shape:
+                raise ValueError("shape must be aligned")
+            return self
+        return NotImplemented
+
+    def __sub__(self, other):
+        """Return self - other."""
+        if isinstance(other, zmatrix):
+            if self.shape != other.shape:
+                raise ValueError("shape must be aligned")
+            return self
+        return NotImplemented
+
+    def __mul__(self, other):
+        """Return self * other."""
+        if isinstance(other, numbers.Number):
+            return self
+        if isinstance(other, core.vector):
+            if self.shape[1] != other.shape[0]:
+                raise ValueError("shape must be aligned")
+            return core.vector(numpy.zeros((self.shape[0], 1)))
+        if isinstance(other, zmatrix):
+            if self.shape[1] != other.shape[0]:
+                raise ValueError("shape must be aligned")
+            return zmatrix((self.shape[0], other.shape[1]))
+        return NotImplemented
+
+    def __rmul__(self, other):
+        """Return other * self."""
+        if isinstance(other, numbers.Number):
+            return self
+        if isinstance(other, core.vector):
+            if other.shape[1] != self.shape[0]:
+                raise ValueError("shape must be aligned")
+            return core.vector(numpy.zeros((1, self.shape[1])))
+        return NotImplemented
+
+    def __matmul__(self, other):
+        """Return self @ other."""
+        if isinstance(other, core.vector):
+            if self.shape[1] != other.shape[0]:
+                raise ValueError("shape must be aligned")
+            return core.vector(numpy.zeros((self.shape[0], 1)))
+        if isinstance(other, zmatrix):
+            if self.shape[1] != other.shape[0]:
+                raise ValueError("shape must be aligned")
+            return zmatrix((self.shape[0], other.shape[1]))
+        return NotImplemented
+
+    def __rmatmul__(self, other):
+        """Return other @ self."""
+        if isinstance(other, core.vector):
+            if other.shape[1] != self.shape[0]:
+                raise ValueError("shape must be aligned")
+            return core.vector(numpy.zeros((1, self.shape[1])))
+        return NotImplemented
+
+    def __pow__(self, other):
+        """Return self ** other."""
+        if self.shape[0] != self.shape[1]:
+            raise ValueError("shape must be square")
+        return self
+
+    def __rpow__(self, other):
+        """Return other ** self."""
+        if self.shape[0] != self.shape[1]:
+            raise ValueError("shape must be square")
+        return self
+
     def __eq__(self, other):
         """Return self == other."""
         if isinstance(other, zmatrix):

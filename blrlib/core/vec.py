@@ -140,20 +140,12 @@ class vector(object):
             if self.shape[1] == 1:
                 return core.matrix(self.a @ other.a)
             return (self.a @ other.a).item()
-        if isinstance(other, core.zmatrix):
-            if self.shape[1] != other.shape[0]:
-                raise ValueError("shape must be aligned")
-            return vector(numpy.zeros((self.shape[0], other.shape[1])))
         return NotImplemented
 
     def __rmul__(self, other):
         """Return other * self."""
         if isinstance(other, numbers.Number):
             return vector(other * self.a)
-        if isinstance(other, core.zmatrix):
-            if other.shape[1] != self.shape[0]:
-                raise ValueError("shape must be aligned")
-            return vector(numpy.zeros((other.shape[0], self.shape[1])))
         return NotImplemented
 
     def __eq__(self, other):
