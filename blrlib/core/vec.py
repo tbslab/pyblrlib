@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numbers
 import numpy
-from . import mat
+from .. import core
 
 
 class vector(object):
@@ -138,9 +138,9 @@ class vector(object):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
             if self.shape[1] == 1:
-                return mat.matrix(self.a @ other.a)
+                return core.matrix(self.a @ other.a)
             return (self.a @ other.a).item()
-        if isinstance(other, mat.zmatrix):
+        if isinstance(other, core.zmatrix):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
             return vector(numpy.zeros((self.shape[0], other.shape[1])))
@@ -150,7 +150,7 @@ class vector(object):
         """Return other * self."""
         if isinstance(other, numbers.Number):
             return vector(other * self.a)
-        if isinstance(other, mat.zmatrix):
+        if isinstance(other, core.zmatrix):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
             return vector(numpy.zeros((other.shape[0], self.shape[1])))

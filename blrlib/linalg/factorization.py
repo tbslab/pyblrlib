@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 import numpy
-from ..core.mat import zmatrix
-from ..core.mat import matrix
-from ..core.mat import lrmatrix
-from ..core.mat import blrmatrix
+from .. import core
 
 
 def qr(mat):
     """QR factorization."""
-    if isinstance(mat, (matrix, numpy.ndarray)):
+    if isinstance(mat, (core.mat.matrix, numpy.ndarray)):
         q, r = numpy.linalg.qr(mat)
-        return matrix(q), matrix(r)
-    if isinstance(mat, blrmatrix):
+        return core.mat.matrix(q), core.mat.matrix(r)
+    if isinstance(mat, core.mat.blrmatrix):
         return _mbgs_for_blrmatrix(mat)
     return NotImplemented
 
@@ -38,7 +35,7 @@ def _tsqr_for_blrmatrix(blrmat):
     B = numpy.full(nb, None)
 
     for i in range(nb):
-        if isinstance(X.A[i, 0], lrmatrix):
+        if isinstance(X.A[i, 0], core.mat.lrmatrix):
             Qi, Ri = numpy.linalg.qr(X.A[i, 0].U)
             Q[i] = Qi
             B[i] = Ri @ X.A[i, 0].V
@@ -55,14 +52,14 @@ def _tsqr_for_blrmatrix(blrmat):
     rs, re = 0, 0
 
     for i in range(nb):
-        if isinstance(X.A[i, 0], lrmatrix):
+        if isinstance(X.A[i, 0], core.mat.lrmatrix):
             rs, re = re, re + X.A[i, 0].rank
-            Q[i] = lrmatrix((Q[i], Qb[rs:re, :]))
+            Q[i] = core.mat.lrmatrix((Q[i], Qb[rs:re, :]))
         else:
             rs, re = re, re + X.A[i, 0].shape[0]
-            Q[i] = matrix(Qb[rs:re, :])
+            Q[i] = core.mat.matrix(Qb[rs:re, :])
 
-    return Q, matrix(R)
+    return Q, core.mat.matrix(R)
 
 
 def _mbgs_for_blrmatrix(blrmat):
@@ -82,24 +79,24 @@ def _mbgs_for_blrmatrix(blrmat):
     """
     nb = blrmat.shape[1]
     nb_min = min(blrmat.shape)
-    X = blrmatrix(blrmat.A.copy())
+    X = core.mat.blrmatrix(blrmat.A.copy())
     Q = numpy.full((X.shape[0], nb_min), None)
     R = numpy.full((nb_min, X.shape[1]), None)
 
     for index in numpy.ndindex(R.shape):
         rshape = X.A[index[0], index[0]].shape[1]
         cshape = X.A[index].shape[1]
-        R[index] = zmatrix((rshape, cshape))
+        R[index] = core.mat.zmatrix((rshape, cshape))
 
     for j in range(nb):
         Q[:, j], R[j, j] = _tsqr_for_blrmatrix(X[:, j])
 
         for k in range(j + 1, nb):
-            Qj = blrmatrix(Q[:, j:j + 1])
+            Qj = core.mat.blrmatrix(Q[:, j:j + 1])
             R[j, k] = (Qj.T @ X[:, k]).A[0, 0]
             X.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
 
         if j >= nb_min - 1:
-            return blrmatrix(Q), blrmatrix(R)
+            return core.mat.blrmatrix(Q), core.mat.blrmatrix(R)
 
-    return blrmatrix(Q), blrmatrix(R)
+    return core.mat.blrmatrix(Q), core.mat.blrmatrix(R)

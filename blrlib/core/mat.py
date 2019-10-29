@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numbers
 import numpy
-from . import vec
-
+from .. import core
+from .. import linalg
 
 class zmatrix(object):
     """A zero matrix object.
@@ -227,10 +227,10 @@ class matrix(object):
         """Return self * other."""
         if isinstance(other, numbers.Number):
             return matrix(self.A * other)
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector(self.A @ other.a)
+            return core.vector(self.A @ other.a)
         if isinstance(other, matrix):
             return matrix(self.A @ other.A)
         if isinstance(other, zmatrix):
@@ -243,10 +243,10 @@ class matrix(object):
         """Return other * self."""
         if isinstance(other, numbers.Number):
             return matrix(other * self.A)
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector(other.a @ self.A)
+            return core.vector(other.a @ self.A)
         if isinstance(other, zmatrix):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
@@ -255,10 +255,10 @@ class matrix(object):
 
     def __matmul__(self, other):
         """Return self @ other."""
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector(self.A @ other.a)
+            return core.vector(self.A @ other.a)
         if isinstance(other, matrix):
             return matrix(self.A @ other.A)
         if isinstance(other, zmatrix):
@@ -269,10 +269,10 @@ class matrix(object):
 
     def __rmatmul__(self, other):
         """Return other @ self."""
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector(other.a @ self.A)
+            return core.vector(other.a @ self.A)
         if isinstance(other, zmatrix):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
@@ -314,10 +314,16 @@ class lrmatrix(object):
             2. tuple(array like, array like),
                 you get the LR matrix which have left matrix (tuple[0]) and
                 right matrix (tuple[1]).
+    mathod : str, optional
+        A approximation method name. You can choose it from following list:
+            1. svd
+                Singular Value Decomposition Method.
+            2. aca
+                Adaptive Cross Approximation.
     eps : float, optional
-        Numerical value for controlling approximation.
+        Numerical value for controlled accuracy.
     rank : int, optional
-        Numerical rank for fixed approximation.
+        Numerical rank for fixed rank approximation.
 
     Attributes
     ----------
@@ -334,16 +340,16 @@ class lrmatrix(object):
     fnorm : float
         Frobenius norm of self.
     eps : float, optional
-        Numerical value for controlling approximation.
+        Numerical value for controlled accuracy.
     rank : int, optional
-        Numerical rank for fixed approximation.
+        Numerical rank for fixed rank approximation.
 
     Examples
     --------
-    Ex.1 : Make the lrmatrix instance.
+    Ex.1 : Make the lrmatrix instance using SVD method.
     >>> import blrlib as bl
     >>> A = bl.matrix([[1, 2], [3, 4]])
-    >>> X = bl.lrmatrix(A, rank=1)
+    >>> X = bl.lrmatrix(A, mathod="svd", rank=1)
     >>> X
     lrmatrix
     left
@@ -366,7 +372,7 @@ class lrmatrix(object):
     [[3, 4]]
     """
 
-    def __init__(self, obj, eps=None, rank=None):
+    def __init__(self, obj, method=None, eps=None, rank=None):
         """Initialize self."""
         self._eps = eps
 
@@ -375,31 +381,14 @@ class lrmatrix(object):
             self._right = matrix(obj[1])
 
             if self._left.shape[1] != self._right.shape[0]:
-                raise ValueError("invalid shape")
-        elif eps:
-            self._init_controlled_approximation(obj, eps)
-        elif rank:
-            self._init_fixed_approximation(obj, rank)
+                raise ValueError("shape must be aligned")
+        if method:
+            if method.lower() == "svd":
+                self._left, self._right = linalg.svda(obj, eps, rank)
+            else:
+                raise NotImplementedError("such method does not exist")
         else:
-            raise ValueError("invalid argument")
-
-    def _init_controlled_approximation(self, obj, eps):
-        """Initialization the LR matrix with controlled approximation."""
-        U, s, Vh = numpy.linalg.svd(obj)
-        rank = 1
-        s_norm = numpy.linalg.norm(s)
-
-        while numpy.linalg.norm(s[rank:]) >= eps * s_norm:
-            rank += 1
-
-        self._left = matrix(U[:, :rank] * s[:rank])
-        self._right = matrix(Vh[:rank, :])
-
-    def _init_fixed_approximation(self, obj, rank):
-        """Initialization the LR matrix with fixed rank approximation."""
-        U, s, Vh = numpy.linalg.svd(obj)
-        self._left = matrix(U[:, :rank] * s[:rank])
-        self._right = matrix(Vh[:rank, :])
+            raise ValueError("you must choose approximation method")
 
     @property
     def U(self):
@@ -486,14 +475,14 @@ class lrmatrix(object):
         U, s, Vh = numpy.linalg.svd(Ru @ Rv.T)
 
         if self.eps:
-            rank = 1
-            s_norm = numpy.linalg.norm(s)
+            accuracy_bound = self.eps * numpy.linalg.norm(s)
+            new_rank = 1
 
-            while numpy.linalg.norm(s[rank:]) >= self.eps * s_norm:
-                rank += 1
+            while numpy.linalg.norm(s[new_rank:]) >= accuracy_bound:
+                new_rank += 1
 
-            left = (Qu @ U)[:, :rank] * s[:rank]
-            right = (Vh @ Qv.T)[:rank, :]
+            left = (Qu @ U)[:, :new_rank] * s[:new_rank]
+            right = (Vh @ Qv.T)[:new_rank, :]
             return lrmatrix((left, right), eps=self.eps)
 
         left = (Qu @ U)[:, :self.rank] * s[:self.rank]
@@ -526,10 +515,10 @@ class lrmatrix(object):
         """Return self * other."""
         if isinstance(other, numbers.Number):
             return lrmatrix((self.U, self.V * other), eps=self.eps)
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector(self.U @ (self.V @ other))
+            return core.vector(self.U @ (self.V @ other))
         if isinstance(other, matrix):
             return self @ other
         if isinstance(other, lrmatrix):
@@ -544,10 +533,10 @@ class lrmatrix(object):
         """Return other * self."""
         if isinstance(other, numbers.Number):
             return lrmatrix((other * self.U, self.V), eps=self.eps)
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector((other @ self.U) @ self.V)
+            return core.vector((other @ self.U) @ self.V)
         if isinstance(other, matrix):
             return other @ self
         if isinstance(other, zmatrix):
@@ -558,10 +547,10 @@ class lrmatrix(object):
 
     def __matmul__(self, other):
         """Return self @ other."""
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector(self.U @ (self.V @ other))
+            return core.vector(self.U @ (self.V @ other))
         if isinstance(other, matrix):
             return lrmatrix((self.U, self.V @ other), eps=self.eps)
         if isinstance(other, lrmatrix):
@@ -577,10 +566,10 @@ class lrmatrix(object):
 
     def __rmatmul__(self, other):
         """Return other @ self."""
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             if other.shape[1] != self.shape[0]:
                 raise ValueError("shape must be aligned")
-            return vec.vector((other @ self.U) @ self.V)
+            return core.vector((other @ self.U) @ self.V)
         if isinstance(other, matrix):
             return lrmatrix((other @ self.U, self.V), eps=self.eps)
         if isinstance(other, zmatrix):
@@ -757,7 +746,7 @@ class blrmatrix(object):
         """Return self * other."""
         if isinstance(other, numbers.Number):
             return self.A * other
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             return self._mul_by_vector(other)
         if isinstance(other, blrmatrix):
             return blrmatrix(self.A @ other.A)
@@ -771,7 +760,7 @@ class blrmatrix(object):
         """Return other * self."""
         if isinstance(other, numbers.Number):
             return other * self.A
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             return self._rmul_by_vector(other)
         return NotImplemented
 
@@ -781,7 +770,7 @@ class blrmatrix(object):
 
     def __matmul__(self, other):
         """Return self @ other."""
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             return self._mul_by_vector(other)
         if isinstance(other, blrmatrix):
             return blrmatrix(self.A @ other.A)
@@ -789,7 +778,7 @@ class blrmatrix(object):
 
     def __rmatmul__(self, other):
         """Return other @ self."""
-        if isinstance(other, vec.vector):
+        if isinstance(other, core.vector):
             return self._rmul_by_vector(other)
         return NotImplemented
 
@@ -825,7 +814,7 @@ class blrmatrix(object):
         return matrix(numpy.block(contents))
 
 
-def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
+def build_blrmatrix(mat, structure, indices=None, method=None, eps=None, rank=None):
     """Return block low rank (BLR) Matrix.
 
     Arguments
@@ -842,10 +831,16 @@ def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
         This is a block index list which specifies which block should be matrix
         object. If you do not give this argument, this function will generate
         normal block matrix, although that instance is blrmatrix object.
+    mathod : str, optionnal
+        A approximation method name. You can choose it from following list:
+            1. svd
+                Singular Value Decomposition Method.
+            2. aca
+                Adaptive Cross Approximation.
     eps : float, optional
-        Numerical value for controlling approximation.
+        Numerical value for controlled accuracy.
     rank : int, optional
-        Numerical rank for fixed approximation.
+        Numerical rank for fixed rank approximation.
 
     Returns
     -------
@@ -862,7 +857,7 @@ def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
     >>> A = np.random.randint(1, 5, (100, 100))
     >>> nb = 10
     >>> indices = [(i, i) for i in range(nb)]
-    >>> X = bl.build_blrmatrix(A, nb, indices, rank=1)
+    >>> X = bl.build_blrmatrix(A, nb, indices, method="svd", rank=1)
     >>> print(X)
     blrmatrix(10x10)
     (0, 0): matrix(10x10)
@@ -885,7 +880,7 @@ def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
         [5, 15, 20, 15, 10, 25, 5, 5], # row block shapes
         [15, 25, 10, 5, 20, 5, 15, 5]  # column block shapes
     ]
-    >>> X = bl.build_blrmatrix(A, structure, indices, eps=1e-4)
+    >>> X = bl.build_blrmatrix(A, structure, indices, method="svd", eps=1e-4)
     >>> print(X)
     blrmatrix(8x8)
     (0, 0): matrix(5x15)
@@ -927,8 +922,6 @@ def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
             raise ValueError("'indices' elements must be tuple(row, column)")
     else:
         indices = ()
-    if not (eps or rank):
-        raise ValueError("either 'eps' or 'rank' argument must be needed")
 
     block = numpy.full((rshapes.size, cshapes.size), None)
 
@@ -940,6 +933,6 @@ def build_blrmatrix(mat, structure, indices=None, eps=None, rank=None):
         if index in indices:
             block[index] = matrix(mat[rs:re, cs:ce])
         else:
-            block[index] = lrmatrix(mat[rs:re, cs:ce], eps=eps, rank=rank)
+            block[index] = lrmatrix(mat[rs:re, cs:ce], method, eps, rank)
 
     return blrmatrix(block)

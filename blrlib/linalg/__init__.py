@@ -5,5 +5,6 @@
     The Subpackage for blrmat package.
 """
 from .factorization import qr
+from .approximation import svda
 
-__all__ = ["qr"]
+__all__ = ["qr", "svda"]
