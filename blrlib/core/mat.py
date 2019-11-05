@@ -483,7 +483,7 @@ class lrmatrix(object):
         elif method:
             if method.lower() == "svd":
                 self._left, self._right = linalg.truncated_svd(obj, eps, rank)
-            if method.lower() == "aca":
+            elif method.lower() == "aca":
                 self._left, self._right = linalg.aca(obj, eps, rank)
             else:
                 raise NotImplementedError("such method does not exist")
