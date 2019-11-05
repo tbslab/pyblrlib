@@ -73,6 +73,7 @@ def aca(mat, eps=None, rank=None):
     Returns
     -------
     U: matrix
+        A left matrix of lrmatrix.
     V: matrix
         A right matrix of lrmatrix.
     """
