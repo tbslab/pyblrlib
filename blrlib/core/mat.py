@@ -482,7 +482,9 @@ class lrmatrix(object):
                 raise ValueError("shape must be aligned")
         elif method:
             if method.lower() == "svd":
-                self._left, self._right = linalg.svda(obj, eps, rank)
+                self._left, self._right = linalg.truncated_svd(obj, eps, rank)
+            if method.lower() == "aca":
+                self._left, self._right = linalg.aca(obj, eps, rank)
             else:
                 raise NotImplementedError("such method does not exist")
 
@@ -994,34 +996,34 @@ def build_blrmatrix(mat, structure, indices=[], method="svd", eps=None, rank=Non
         nb = structure
         if nb < 1:
             raise ValueError("'structure' must be larger than 1")
-        rshapes = [mat.shape[0] // nb for _ in range(nb - 1)]
-        rshapes.append(mat.shape[0] // nb + mat.shape[0] % nb)
-        cshapes = [mat.shape[1] // nb for _ in range(nb - 1)]
-        cshapes.append(mat.shape[1] // nb + mat.shape[1] % nb)
-        rshapes = numpy.array(rshapes, dtype=int)
-        cshapes = numpy.array(cshapes, dtype=int)
+        shape_rows = [mat.shape[0] // nb for _ in range(nb - 1)]
+        shape_rows.append(mat.shape[0] // nb + mat.shape[0] % nb)
+        shape_cols = [mat.shape[1] // nb for _ in range(nb - 1)]
+        shape_cols.append(mat.shape[1] // nb + mat.shape[1] % nb)
+        shape_rows = numpy.array(shape_rows, dtype=int)
+        shape_cols = numpy.array(shape_cols, dtype=int)
     elif isinstance(structure, list):
         if len(structure) != 2:
             raise ValueError("'structure' must has two list")
-        rshapes = numpy.array(structure[0], dtype=int)
-        cshapes = numpy.array(structure[1], dtype=int)
-        if not rshapes.ndim == cshapes.ndim == 1:
+        shape_rows = numpy.array(structure[0], dtype=int)
+        shape_cols = numpy.array(structure[1], dtype=int)
+        if not shape_rows.ndim == shape_cols.ndim == 1:
             raise ValueError("'structure' elements must be 1-dimensional")
-        if not mat.shape == (rshapes.sum(), cshapes.sum()):
+        if not mat.shape == (shape_rows.sum(), shape_cols.sum()):
             raise ValueError("'structure' must be compatible with 'mat.shape'")
     else:
         raise ValueError("'structure' must be int or list of list")
 
-    block = numpy.full((rshapes.size, cshapes.size), None)
+    block = numpy.full((shape_rows.size, shape_cols.size), None)
 
     for index in numpy.ndindex(block.shape):
         i, j = index
-        rs, re = rshapes[:i].sum(), rshapes[:i + 1].sum()
-        cs, ce = cshapes[:j].sum(), cshapes[:j + 1].sum()
+        row1, row2 = shape_rows[:i].sum(), shape_rows[:i + 1].sum()
+        col1, col2 = shape_cols[:j].sum(), shape_cols[:j + 1].sum()
 
         if index in indices:
-            block[index] = matrix(mat[rs:re, cs:ce])
+            block[index] = matrix(mat[row1:row2, col1:col2])
         else:
-            block[index] = lrmatrix(mat[rs:re, cs:ce], method, eps, rank)
+            block[index] = lrmatrix(mat[row1:row2, col1:col2], method, eps, rank)
 
     return blrmatrix(block)

@@ -62,15 +62,15 @@ def _tsqr_for_blrmatrix(blrmat):
         B = numpy.vstack([B, Z])
 
     Qb, R = numpy.linalg.qr(B)
-    rs, re = 0, 0
+    row1, row2 = 0, 0
 
     for i in range(nb):
         if isinstance(X.A[i, 0], core.lrmatrix):
-            rs, re = re, re + X.A[i, 0].rank
-            Q[i] = core.lrmatrix((Q[i], Qb[rs:re, :]))
+            row1, row2 = row2, row2 + X.A[i, 0].rank
+            Q[i] = core.lrmatrix((Q[i], Qb[row1:row2, :]))
         else:
-            rs, re = re, re + X.A[i, 0].shape[0]
-            Q[i] = core.matrix(Qb[rs:re, :])
+            row1, row2 = row2, row2 + X.A[i, 0].shape[0]
+            Q[i] = core.matrix(Qb[row1:row2, :])
 
     return Q, core.matrix(R)
 
@@ -91,15 +91,15 @@ def _mbgs_for_blrmatrix(blrmat):
         The upper triangular matrix.
     """
     nb = blrmat.shape[1]
-    nb_min = min(blrmat.shape)
+    min_nb = min(blrmat.shape)
     X = core.blrmatrix(blrmat.A.copy())
-    Q = numpy.full((X.shape[0], nb_min), None)
-    R = numpy.full((nb_min, X.shape[1]), None)
+    Q = numpy.full((X.shape[0], min_nb), None)
+    R = numpy.full((min_nb, X.shape[1]), None)
 
     for index in numpy.ndindex(R.shape):
-        rshape = X.A[index[0], index[0]].shape[1]
-        cshape = X.A[index].shape[1]
-        R[index] = core.zmatrix((rshape, cshape))
+        shape_row = X.A[index[0], index[0]].shape[1]
+        shape_col = X.A[index].shape[1]
+        R[index] = core.zmatrix((shape_row, shape_col))
 
     for j in range(nb):
         Q[:, j], R[j, j] = _tsqr_for_blrmatrix(X[:, j])
@@ -109,7 +109,7 @@ def _mbgs_for_blrmatrix(blrmat):
             R[j, k] = (Qj.T @ X[:, k]).A[0, 0]
             X.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
 
-        if j >= nb_min - 1:
+        if j >= min_nb - 1:
             return core.blrmatrix(Q), core.blrmatrix(R)
 
     return core.blrmatrix(Q), core.blrmatrix(R)
