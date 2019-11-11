@@ -93,7 +93,8 @@ def _aca_controlled_accuracy(mat, eps):
     """
     A = numpy.array(mat)
     max_rank = min(A.shape)
-    pivot = numpy.random.randint(0, A.shape[1])
+    # pivot = numpy.random.randint(0, A.shape[1])
+    pivot = 0
     pivot_cols = {pivot}
     u = numpy.array(A[:, pivot], dtype=numpy.float)
     pivot = numpy.abs(u).argmax()
@@ -136,6 +137,7 @@ def _aca_fixed_rank(mat, rank):
     """
     A = numpy.array(mat)
     pivot = numpy.random.randint(0, A.shape[1])
+    pivot = 0
     pivot_cols = {pivot}
     u = numpy.array(A[:, pivot], dtype=numpy.float)
     pivot = numpy.abs(u).argmax()
