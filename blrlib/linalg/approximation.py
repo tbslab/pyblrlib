@@ -3,16 +3,16 @@ import numpy
 from .. import core
 
 
-def truncated_svd(mat, eps=None, rank=None):
+def truncated_svd(obj, eps=None, rank=None):
     """Return two matrices approximated by using truncated singular
     value decomposition.
 
     Parameters
     ----------
-    mat: array_like
+    obj: array_like
         A Dense object which is of array_like.
     eps: float, default None
-        Numerical value for controlled accuracy.
+        Numerical value for adaptive rank approximation.
     rank: int, default None
         Numerical rank for fixed rank approximation.
 
@@ -24,49 +24,44 @@ def truncated_svd(mat, eps=None, rank=None):
         A right Dense of LowRank.
     """
     if rank:
-        return _truncated_svd_fixed_rank(mat, rank)
+        return _truncated_svd_fixed(obj, rank)
     if eps:
-        return _truncated_svd_controlled_accuracy(mat, eps)
+        return _truncated_svd_adaptive(obj, eps)
     else:
-        raise ValueError("'eps' or 'rank' parameter must be given")
+        raise ValueError("'eps' or 'rank' argument must be given")
 
 
-def _truncated_svd_controlled_accuracy(mat, eps):
+def _truncated_svd_adaptive(obj, eps):
     """Return two matrices approximated by using truncated singular
     value decomposition.
-
-    This is a approximation for controlled accuracy.
     """
-    U, s, Vh = numpy.linalg.svd(mat)
-    accuracy_bound = eps * numpy.linalg.norm(s)
+    U, s, Vh = numpy.linalg.svd(obj)
     rank = 1
 
-    while numpy.linalg.norm(s[rank:]) >= accuracy_bound:
+    while s[rank] >= eps:
         rank += 1
 
     return core.Dense(U[:, :rank] * s[:rank]), core.Dense(Vh[:rank, :])
 
 
-def _truncated_svd_fixed_rank(mat, rank):
+def _truncated_svd_fixed(obj, rank):
     """Return two matrices approximated by using truncated singular
     value decomposition.
-
-    This is a approximation for fixed rank.
     """
-    U, s, Vh = numpy.linalg.svd(mat)
+    U, s, Vh = numpy.linalg.svd(obj)
     return core.Dense(U[:, :rank] * s[:rank]), core.Dense(Vh[:rank, :])
 
 
-def aca(mat, eps=None, rank=None):
+def aca(obj, eps=None, rank=None):
     """Return two matrices approximated by using adaptive cross
     approximation.
 
     Parameters
     ----------
-    mat: array_like
+    obj: array_like
         A Dense object which is of array_like.
     eps: float, default None
-        Numerical value for controlled accuracy.
+        Numerical value for adaptive rank approximation.
     rank: int, default None
         Numerical rank for fixed rank approximation.
 
@@ -78,22 +73,19 @@ def aca(mat, eps=None, rank=None):
         A right Dense of LowRank.
     """
     if rank:
-        return _aca_fixed_rank(mat, rank)
+        return _aca_fixed(obj, rank)
     if eps:
-        return _aca_controlled_accuracy(mat, eps)
+        return _aca_adaptive(obj, eps)
     else:
-        raise ValueError("'eps' or 'rank' parameter must be given")
+        raise ValueError("'eps' or 'rank' argument must be given")
 
 
-def _aca_controlled_accuracy(mat, eps):
+def _aca_adaptive(obj, eps):
     """Return two matrices approximated by using adaptive cross
     approximation.
-
-    This is a approximation for controlled accuracy.
     """
-    A = numpy.array(mat)
+    A = numpy.array(obj)
     max_rank = min(A.shape)
-    # pivot = numpy.random.randint(0, A.shape[1])
     pivot = 0
     pivot_cols = {pivot}
     u = numpy.array(A[:, pivot], dtype=numpy.float)
@@ -129,14 +121,11 @@ def _aca_controlled_accuracy(mat, eps):
     return core.Dense(U), core.Dense(V)
 
 
-def _aca_fixed_rank(mat, rank):
+def _aca_fixed(obj, rank):
     """Return two matrices approximated by using adaptive cross
     approximation.
-
-    This is a approximation for fixed rank.
     """
-    A = numpy.array(mat)
-    pivot = numpy.random.randint(0, A.shape[1])
+    A = numpy.array(obj)
     pivot = 0
     pivot_cols = {pivot}
     u = numpy.array(A[:, pivot], dtype=numpy.float)
