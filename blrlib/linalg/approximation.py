@@ -10,7 +10,7 @@ def truncated_svd(mat, eps=None, rank=None):
     Parameters
     ----------
     mat: array_like
-        A matrix object which is of array_like.
+        A Dense object which is of array_like.
     eps: float, default None
         Numerical value for controlled accuracy.
     rank: int, default None
@@ -18,10 +18,10 @@ def truncated_svd(mat, eps=None, rank=None):
 
     Returns
     -------
-    U: matrix
-        A left matrix of lrmatrix.
-    V: matrix
-        A right matrix of lrmatrix.
+    U: Dense
+        A left Dense of LowRank.
+    V: Dense
+        A right Dense of LowRank.
     """
     if rank:
         return _truncated_svd_fixed_rank(mat, rank)
@@ -44,7 +44,7 @@ def _truncated_svd_controlled_accuracy(mat, eps):
     while numpy.linalg.norm(s[rank:]) >= accuracy_bound:
         rank += 1
 
-    return core.matrix(U[:, :rank] * s[:rank]), core.matrix(Vh[:rank, :])
+    return core.Dense(U[:, :rank] * s[:rank]), core.Dense(Vh[:rank, :])
 
 
 def _truncated_svd_fixed_rank(mat, rank):
@@ -54,7 +54,7 @@ def _truncated_svd_fixed_rank(mat, rank):
     This is a approximation for fixed rank.
     """
     U, s, Vh = numpy.linalg.svd(mat)
-    return core.matrix(U[:, :rank] * s[:rank]), core.matrix(Vh[:rank, :])
+    return core.Dense(U[:, :rank] * s[:rank]), core.Dense(Vh[:rank, :])
 
 
 def aca(mat, eps=None, rank=None):
@@ -64,7 +64,7 @@ def aca(mat, eps=None, rank=None):
     Parameters
     ----------
     mat: array_like
-        A matrix object which is of array_like.
+        A Dense object which is of array_like.
     eps: float, default None
         Numerical value for controlled accuracy.
     rank: int, default None
@@ -72,10 +72,10 @@ def aca(mat, eps=None, rank=None):
 
     Returns
     -------
-    U: matrix
-        A left matrix of lrmatrix.
-    V: matrix
-        A right matrix of lrmatrix.
+    U: Dense
+        A left Dense of LowRank.
+    V: Dense
+        A right Dense of LowRank.
     """
     if rank:
         return _aca_fixed_rank(mat, rank)
@@ -126,7 +126,7 @@ def _aca_controlled_accuracy(mat, eps):
         mu2 = mu2 + nu ** 2 + 2 * tmp
         r = r + 1
 
-    return core.matrix(U), core.matrix(V)
+    return core.Dense(U), core.Dense(V)
 
 
 def _aca_fixed_rank(mat, rank):
@@ -162,7 +162,7 @@ def _aca_fixed_rank(mat, rank):
         pivot_cols.add(pivot)
         r = r + 1
 
-    return core.matrix(U), core.matrix(V)
+    return core.Dense(U), core.Dense(V)
 
 
 def _argmax_from_exclusion(a, indices):

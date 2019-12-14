@@ -4,32 +4,28 @@ import numpy
 from .. import core
 
 
-class vector(object):
-    """A vector object utilizing a numpy.ndarray object.
+class Vector(object):
+    """A Vector object utilizing a numpy.ndarray object.
 
     Attributes
     ----------
-    a: numpy.ndarray
-        Self as numpy.ndarray object.
-    T: vector
+    t: Vector
         Transpose of self.
+    size: int
+        Size of self.
     shape: tuple of int
         Shape of self.
-    size: int
-        Number of elements in self.
     nbytes: int
         total bytes consumed by the elements of self.
-    norm: float
-        Euclidean norm of self.
 
     Examples
     --------
-    Make the vector instance.
+    Make the Vector instance.
 
     >>> import blrlib as bl
-    >>> a = bl.vector([1, 2, 3])
+    >>> a = bl.Vector([1, 2, 3])
     >>> a 
-    vector
+    Vector
     [[1]
      [2]
      [3]]
@@ -43,56 +39,46 @@ class vector(object):
         obj: array_like
             1 or 2 dimensional array object.
         """
-        self._content = numpy.array(obj)
+        self._v = numpy.array(obj)
 
-        if self._content.ndim == 0:
-            self._content = self._content.reshape(1, 1)
-        if self._content.ndim == 1:
-            self._content = self._content.reshape(self._content.size, 1)
-        if self._content.ndim == 2 and 1 not in self._content.shape:
+        if self._v.ndim == 0:
+            self._v = self._v.reshape(1, 1)
+        if self._v.ndim == 1:
+            self._v = self._v.reshape(self._v.size, 1)
+        if self._v.ndim == 2 and 1 not in self._v.shape:
             raise ValueError("invalid array shape")
-        if self._content.ndim > 2:
+        if self._v.ndim > 2:
             raise TypeError("invalid array dimension")
-        if self._content.dtype not in (numpy.int, numpy.float, numpy.complex):
+        if self._v.dtype not in (numpy.int, numpy.float):
             raise TypeError("valid type instances must be set")
 
     @property
-    def a(self):
-        """Return self as numpy.ndarray object."""
-        return self._content
-
-    @property
-    def T(self):
-        """Return transpose of the vector."""
-        return vector(self._content.T)
-
-    @property
-    def shape(self):
-        """Return shape of the vector."""
-        return self._content.shape
+    def t(self):
+        """Return transpose of the Vector."""
+        return Vector(self._v.T)
 
     @property
     def size(self):
-        """Return number of elements in the vector."""
-        return self._content.size
+        """Return size of the Vector."""
+        return self._v.size
+
+    @property
+    def shape(self):
+        """Return shape of the Vector."""
+        return self._v.shape
 
     @property
     def nbytes(self):
-        """Return total bytes consumed by the elements of the vector."""
-        return self._content.nbytes
-
-    @property
-    def norm(self):
-        """Return euclidean norm of the vector."""
-        return numpy.linalg.norm(self._content)
+        """Return total bytes consumed by the elements of the Vector."""
+        return self._v.nbytes
 
     def __repr__(self):
         """Return the official string representation of this object."""
-        return "vector\n" + str(self.a)
+        return "Vector\n" + str(self._v)
 
     def __str__(self):
         """Return the informal string representation of this object."""
-        return "vector({0})".format(self.size)
+        return "Vector({0})".format(self.size)
 
     def __getitem__(self, key):
         """Return self[key]."""
@@ -101,11 +87,11 @@ class vector(object):
 
         if self.shape[0] == 1:
             if isinstance(key, int):
-                return self.a[0, key]
-            return vector(self.a[0, key])
+                return self._v[0, key]
+            return Vector(self._v[0, key])
         if isinstance(key, int):
-            return self.a[key, 0]
-        return vector(self.a[key, 0])
+            return self._v[key, 0]
+        return Vector(self._v[key, 0])
 
     def __setitem__(self, key, item):
         """Set item to self[key]."""
@@ -113,12 +99,12 @@ class vector(object):
             raise TypeError("invalid key type")
 
         if self.shape[0] == 1:
-            self.a[0, key] = numpy.array(item)
-        self.a[key, 0] = numpy.array(item)
+            self._v[0, key] = numpy.array(item)
+        self._v[key, 0] = numpy.array(item)
 
     def __neg__(self):
         """Return -self"""
-        return vector(-self.a)
+        return Vector(-self._v)
 
     def __pos__(self):
         """Return +self"""
@@ -126,42 +112,42 @@ class vector(object):
 
     def __add__(self, other):
         """Return self + other."""
-        if isinstance(other, vector):
+        if isinstance(other, Vector):
             if self.shape != other.shape:
                 raise ValueError("shape must be aligned")
-            return vector(self.a + other.a)
+            return Vector(self._v + other._v)
         return NotImplemented
 
     def __sub__(self, other):
         """Return self - other."""
-        if isinstance(other, vector):
+        if isinstance(other, Vector):
             if self.shape != other.shape:
                 raise ValueError("shape must be aligned")
-            return vector(self.a + (-other.a))
+            return Vector(self._v + (-other._v))
         return NotImplemented
 
     def __mul__(self, other):
         """Return self * other."""
         if isinstance(other, numbers.Number):
-            return vector(self.a * other)
-        if isinstance(other, vector):
+            return Vector(self._v * other)
+        if isinstance(other, Vector):
             if self.shape[1] != other.shape[0]:
                 raise ValueError("shape must be aligned")
             if self.shape[1] == 1:
-                return core.matrix(self.a @ other.a)
-            return (self.a @ other.a).item()
+                return core.Dense(numpy.outer(self._v, other._v))
+            return numpy.dot(self._v, other._v).item()
         return NotImplemented
 
     def __rmul__(self, other):
         """Return other * self."""
         if isinstance(other, numbers.Number):
-            return vector(other * self.a)
+            return Vector(other * self._v)
         return NotImplemented
 
     def __eq__(self, other):
         """Return self == other."""
-        if isinstance(other, vector):
-            return numpy.allclose(self.a, other.a)
+        if isinstance(other, Vector):
+            return numpy.allclose(self._v, other._v)
         return False
 
     def __ne__(self, other):
@@ -170,4 +156,4 @@ class vector(object):
 
     def __array__(self):
         """Return a reference to self."""
-        return self.a
+        return self._v

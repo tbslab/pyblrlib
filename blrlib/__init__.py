@@ -10,12 +10,12 @@ from . import io
 from . import linalg
 from . import vis
 
-from .core.vec import vector
-from .core.mat import zmatrix
-from .core.mat import matrix
-from .core.mat import lrmatrix
-from .core.mat import blrmatrix
-from .core.mat import build_blrmatrix
+from .core.vector import Vector
+from .core.matrix import Zero
+from .core.matrix import Dense
+from .core.matrix import LowRank
+from .core.matrix import BlockLowRank
+from .core.matrix import build
 
 __all__ = []
 __all__.extend(core.__all__)

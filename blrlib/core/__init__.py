@@ -4,13 +4,12 @@
     ===========
     The Subpackage for Block Low Rank Matrix Computations.
 """
-from .vec import vector
-from .mat import zmatrix
-from .mat import matrix
-from .mat import lrmatrix
-from .mat import blrmatrix
-from .mat import build_blrmatrix
+from .vector import Vector
+from .matrix import Zero
+from .matrix import Dense
+from .matrix import LowRank
+from .matrix import BlockLowRank
+from .matrix import build
 
-__all__ = ["vector",
-           "zmatrix", "matrix", "lrmatrix", "blrmatrix",
-           "build_blrmatrix"]
+__all__ = ["Vector", "Zero", "Dense", "LowRank", "BlockLowRank",
+           "build"]
