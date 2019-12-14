@@ -269,8 +269,13 @@ class matrix(object):
 
     def __setitem__(self, key, item):
         """Set item to self[key]."""
-        self.A[key] = item
-
+        if isinstance(item, matrix):
+            if item.shape[1] != 1:
+                self.A[key] = item.A.tolist()
+            self.A[key] = item.A.flatten()
+        else:
+            self.A[key] = item
+        
     def __neg__(self):
         """Return -self"""
         return matrix(-self.A)
@@ -797,7 +802,7 @@ class blrmatrix(object):
         """Return self[key]."""
         item = self.A[key]
 
-        if isinstance(item, (matrix, lrmatrix)):
+        if isinstance(item, (matrix, lrmatrix, zmatrix)):
             return blrmatrix([[item]])
         if item.ndim == 1:
             shape = item.shape[0]
@@ -812,6 +817,15 @@ class blrmatrix(object):
             else:
                 return blrmatrix(item.reshape(1, shape))
         return blrmatrix(item)
+
+    def __setitem__(self, key, item):
+        """Set item to self[key]."""
+        if isinstance(item, blrmatrix):
+            if item.shape[1] != 1:
+                self.A[key] = item.A.tolist()
+            self.A[key] = item.A.flatten()
+        else:
+            self.A[key] = item
 
     def __neg__(self):
         """Return -self."""
