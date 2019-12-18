@@ -3,12 +3,12 @@ import numpy
 from .. import core
 
 
-def qr(mat):
+def qr(obj):
     """Return QR factorization for BlockLowRank or Dense object.
 
     Parameters
     ----------
-    mat: BlockLowRank or Dense
+    obj: BlockLowRank or Dense
         A matrix to be factorized.
 
     Returns
@@ -18,42 +18,42 @@ def qr(mat):
     R: BlockLowRank or Dense
         The upper triangular Dense.
     """
-    if isinstance(mat, (core.Dense, numpy.ndarray)):
-        q, r = numpy.linalg.qr(mat)
-        return core.Dense(q), core.Dense(r)
-    if isinstance(mat, core.BlockLowRank):
-        return _mbgs_for_blrmatrix(mat)
+    if isinstance(obj, (core.Dense, numpy.ndarray)):
+        Q, R = numpy.linalg.qr(obj)
+        return core.Dense(Q), core.Dense(R)
+    if isinstance(obj, core.BlockLowRank):
+        return _blr_mbgs(obj)
     return NotImplemented
 
 
-def _tsqr_for_blrmatrix(blrmat):
+def _blr_tsqr(obj):
     """Return Tall-Skinny QR factorization for BLR matrices.
 
     Parameters
     ----------
-    blrmat: BlockLowRank
-        A matrix to be factorized. The shape must be (rows, 1).
+    obj: BlockLowRank
+        A matrix to be factorized. The block shape must be (nb, 1).
 
     Returns
     -------
-    Q: numpy.ndarray
-        A matrix with orthonormal columns. A list of Dense and LowRank
+    Q: BlockLowRank
+        A BLR matrix with orthonormal columns.
         objects.
     R: Dense
         The upper triangular matrix.
     """
-    nb = blrmat.shape[0]
-    X = blrmat
-    Q = numpy.full(nb, None)
+    nb = obj.nb[0]
+    A = obj
+    Q = core.BlockLowRank(numpy.full((nb, 1), None))
     B = numpy.full(nb, None)
 
     for i in range(nb):
-        if isinstance(X.A[i, 0], core.LowRank):
-            Qi, Ri = numpy.linalg.qr(X.A[i, 0].U)
-            Q[i] = Qi
-            B[i] = Ri @ X.A[i, 0].V
+        if isinstance(A[i, 0], core.LowRank):
+            Qi, Ri = qr(A[i, 0].U)
+            Q[i, 0] = Qi
+            B[i] = Ri * A[i, 0].V
         else:
-            B[i] = X.A[i, 0]
+            B[i] = A[i, 0]
 
     B = numpy.vstack(B)
 
@@ -61,26 +61,30 @@ def _tsqr_for_blrmatrix(blrmat):
         Z = numpy.zeros((B.shape[1] - B.shape[0], B.shape[1]))
         B = numpy.vstack([B, Z])
 
-    Qb, R = numpy.linalg.qr(B)
-    row1, row2 = 0, 0
+    Qb, R = qr(B)
+    rstart, rend = 0, 0
 
     for i in range(nb):
-        if isinstance(X.A[i, 0], core.LowRank):
-            row1, row2 = row2, row2 + X.A[i, 0].rank
-            Q[i] = core.LowRank((Q[i], Qb[row1:row2, :]))
+        if isinstance(A[i, 0], core.LowRank):
+            rstart = rend
+            rend = rend + A[i, 0].rank
+            L = Q[i, 0]
+            R = Qb[rstart:rend, :]
+            Q[i, 0] = core.LowRank((L, R), A[i, 0].method, A[i, 0].eps)
         else:
-            row1, row2 = row2, row2 + X.A[i, 0].shape[0]
-            Q[i] = core.Dense(Qb[row1:row2, :])
+            rstart = rend
+            rend = rend + A[i, 0].shape[0]
+            Q[i, 0] = Qb[rstart:rend, :]
 
-    return Q, core.Dense(R)
+    return Q, R
 
 
-def _mbgs_for_blrmatrix(blrmat):
+def _blr_mbgs(obj):
     """Return Modified block Gram-Schmidt algorithm for BLR matrices.
 
     Parameters
     ----------
-    blrmat: BlockLowRank
+    obj: BlockLowRank
         A matrix to be factorized.
 
     Returns
@@ -90,26 +94,22 @@ def _mbgs_for_blrmatrix(blrmat):
     R: BlockLowRank
         The upper triangular BLR matrix.
     """
-    nb = blrmat.shape[1]
-    min_nb = min(blrmat.shape)
-    X = core.BlockLowRank(blrmat.A.copy())
-    Q = numpy.full((X.shape[0], min_nb), None)
-    R = numpy.full((min_nb, X.shape[1]), None)
+    rnb, cnb = obj.nb
+    min_nb = min(obj.nb)
+    A = obj.copy()
+    Q = core.BlockLowRank(numpy.full((rnb, min_nb), None))
+    R = core.BlockLowRank(numpy.full((min_nb, cnb), None))
 
-    for index in numpy.ndindex(R.shape):
-        shape_row = X.A[index[0], index[0]].shape[1]
-        shape_col = X.A[index].shape[1]
-        R[index] = core.Zero((shape_row, shape_col))
+    for i, j in numpy.ndindex(R.nb):
+        rows = A[i, i].shape[1]
+        cols = A[i, j].shape[1]
+        R[i, j] = core.Zero((rows, cols))
 
-    for j in range(nb):
-        Q[:, j], R[j, j] = _tsqr_for_blrmatrix(X[:, j])
+    for j in range(min_nb):
+        Q[:, j], R[j, j] = _blr_tsqr(A[:, j])
 
-        for k in range(j + 1, nb):
-            Qj = core.BlockLowRank(Q[:, j:j + 1])
-            R[j, k] = (Qj.T @ X[:, k]).A[0, 0]
-            X.A[:, k:k + 1] -= Qj.A @ R[j:j + 1, k:k + 1]
+        for k in range(j + 1, cnb):
+            R[j, k] = (Q[:, j].T * A[:, k])[0, 0]
+            A[:, k] = A[:, k] - Q[:, j] * core.BlockLowRank([[R[j, k]]])
 
-        if j >= min_nb - 1:
-            return core.BlockLowRank(Q), core.BlockLowRank(R)
-
-    return core.BlockLowRank(Q), core.BlockLowRank(R)
+    return Q, R

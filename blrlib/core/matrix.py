@@ -57,11 +57,11 @@ class Zero(object):
 
     def __repr__(self):
         """Return the official string representation of this object."""
-        return "Zero"
+        return "Zero matrix"
 
     def __str__(self):
         """Return the informal string representation of this object."""
-        return "Zero({0[0]}x{0[1]})".format(self.shape)
+        return "Zero{0}".format(self.shape)
 
     def __neg__(self):
         """Return -self"""
@@ -201,18 +201,18 @@ class Dense(object):
 
     def __repr__(self):
         """Return the official string representation of this object."""
-        return "Dense\n" + str(self._m)
+        return "Dense matrix\n" + str(self._m)
 
     def __str__(self):
         """Return the informal string representation of this object."""
-        return "Dense({0[0]}x{0[1]})".format(self.shape)
+        return "Dense{0}".format(self.shape)
 
     def __getitem__(self, key):
         """Return self[key]."""
         item = self._m[key]
 
         if item.ndim == 0:
-            return Dense(item.reshape(1, 1))
+            return item
         if item.ndim == 1:
             shape = item.shape[0]
 
@@ -357,7 +357,7 @@ class LowRank(object):
 
     >>> import blrlib as bl
     >>> A = bl.Dense([[1, 2], [3, 4]])
-    >>> X = bl.LowRank(A, mathod="svd", rank=1)
+    >>> X = bl.LowRank(A, method="svd", rank=1)
     >>> X
     LowRank
     left
@@ -452,11 +452,13 @@ class LowRank(object):
 
     def __repr__(self):
         """Return the official string representation of this object."""
-        return "LowRank\nleft\n" + str(self.U._m) + "\nright\n" + str(self.V._m)
+        return "Low-rank matrix" \
+            + "\nLeft matrix\n" + str(self.U._m) \
+            + "\nRight matrix\n" + str(self.V._m)
 
     def __str__(self):
         """Return the informal string representation of this object."""
-        return "LowRank({0[0]}x{0[1]}, {1})".format(self.shape, self.rank)
+        return "LowRank({0[0]}, {0[1]}, {1})".format(self.shape, self.rank)
 
     def __neg__(self):
         """Return -self."""
@@ -499,6 +501,8 @@ class LowRank(object):
 
             while s[rank] >= self.eps:
                 rank += 1
+                if rank == len(s):
+                    break
 
             L = numpy.matmul(Qu, U)[:, :rank] * s[:rank]
             R = numpy.matmul(Vh, Qv.T)[:rank, :]
@@ -599,6 +603,8 @@ class BlockLowRank(object):
         The (multiplicative) inverse of invertible self.
     shape: tuple of int
         Shape of self.
+    nb: tuple of int
+        number of blocks of self.
     nbytes: int
         total bytes consumed by the elements of self.
 
@@ -621,7 +627,7 @@ class BlockLowRank(object):
         if self._b.ndim != 2:
             raise ValueError("'BlockLowRank' must be 2 dimensional")
         for index in numpy.ndindex(self._b.shape):
-            if not isinstance(self._b[index], (Dense, LowRank, Zero)):
+            if not isinstance(self._b[index], (Dense, LowRank, Zero, type(None))):
                 raise TypeError("valid type instances must be set")
 
     @property
@@ -631,6 +637,7 @@ class BlockLowRank(object):
 
         for i, j in numpy.ndindex(self._b.shape):
             B[j, i] = self._b[i, j].T
+
         return BlockLowRank(B)
 
     @property
@@ -641,6 +648,18 @@ class BlockLowRank(object):
     @property
     def shape(self):
         """Return shape of the BLR matrix"""
+        rows, cols = 0, 0
+
+        for i in range(self._b.shape[0]):
+            rows += self._b[i, 0].shape[0]
+        for j in range(self._b.shape[1]):
+            cols += self._b[0, j].shape[1]
+
+        return rows, cols
+
+    @property
+    def nb(self):
+        """Return number of blocks of the BLR matrix"""
         return self._b.shape
 
     @property
@@ -650,26 +669,28 @@ class BlockLowRank(object):
 
     def __repr__(self):
         """Return the official string representation of this object."""
-        out = "BlockLowRank"
+        out = "Block low-rank matrix"
 
-        for index in numpy.ndindex(self.shape):
+        for index in numpy.ndindex(self.nb):
             out += "\n{0}: {1}".format(index, repr(self._b[index]))
+
         return out
 
     def __str__(self):
         """Return the informal string representation of this object."""
-        out = "BlockLowRank({0[0]}x{0[1]})".format(self.shape)
+        out = "BlockLowRank{0}".format(self.shape)
 
-        for index in numpy.ndindex(self.shape):
+        for index in numpy.ndindex(self.nb):
             out += "\n{0}: {1}".format(index, str(self._b[index]))
+
         return out
 
     def __getitem__(self, key):
         """Return self[key]."""
         item = self._b[key]
 
-        if isinstance(item, (Dense, LowRank, Zero)):
-            return BlockLowRank([[item]])
+        if not isinstance(item, numpy.ndarray):
+            return item
         if item.ndim == 1:
             shape = item.shape[0]
 
@@ -690,8 +711,10 @@ class BlockLowRank(object):
             if item.shape[1] != 1:
                 self._b[key] = item._b.tolist()
             self._b[key] = item._b.flatten()
-        else:
+        elif isinstance(item, (Dense, LowRank, Zero)):
             self._b[key] = item
+        else:
+            raise ValueError("valid object instance must be set")
 
     def __neg__(self):
         """Return -self."""
@@ -724,7 +747,7 @@ class BlockLowRank(object):
     def __mul__(self, other):
         """Return self * other."""
         if isinstance(other, numbers.Number):
-            return self._b * other
+            return BlockLowRank(self._b * other)
         if isinstance(other, core.Vector):
             return self._vector_mul(other)
         if isinstance(other, BlockLowRank):
@@ -734,7 +757,7 @@ class BlockLowRank(object):
     def __rmul__(self, other):
         """Return other * self."""
         if isinstance(other, numbers.Number):
-            return other * self._b
+            return BlockLowRank(other * self._b)
         if isinstance(other, core.Vector):
             return self._vector_rmul(other)
         return NotImplemented
@@ -769,12 +792,16 @@ class BlockLowRank(object):
         """Return a reference to self."""
         return self._b
 
+    def copy(self):
+        """Return a copy of self."""
+        return BlockLowRank(self._b.copy())
+
     def to_dense(self):
         """Return self as Dense object."""
         return Dense(numpy.block(self._b.tolist()))
 
 
-def build(obj, nb, dense_idx=None, method="svd", eps=None, rank=None):
+def build(obj, nb, method="svd", eps=None, rank=None, dense_idx=None):
     """Return block low rank (BLR) Matrix.
 
     Parameters
@@ -783,14 +810,9 @@ def build(obj, nb, dense_idx=None, method="svd", eps=None, rank=None):
         2 dimensional array object.
     nb: int
         A number of blocks.
-    dense_idx: list of tuple, default None 
-        This is a list of tuple which specifies which block index should
-        be Dense object. If you do not give this parameter, only the block
-        diagonals are to be Dense object.
     method: str, default 'svd' 
         A approximation method name. You can choose it from following
         list.
-
         1. 'svd'
             Singular Value Decomposition Method.
         2. 'aca'
@@ -799,11 +821,15 @@ def build(obj, nb, dense_idx=None, method="svd", eps=None, rank=None):
         Numerical value for controlled accuracy.
     rank: int, default None
         Numerical rank for fixed rank approximation.
+    dense_idx: list of tuple, default None 
+        This is a list of tuple which specifies which block index should
+        be Dense object. If you do not give this parameter, only the block
+        diagonals are to be Dense object.
 
     Returns
     -------
-        BlockLowRank :
-            BLR matrix satisfying the conditions you gave.
+    BlockLowRank :
+        BLR matrix satisfying the conditions you gave.
 
     Examples
     --------
@@ -825,28 +851,24 @@ def build(obj, nb, dense_idx=None, method="svd", eps=None, rank=None):
         obj = numpy.array(obj)
     if obj.ndim != 2:
         raise ValueError("'obj' must be 2 dimensional")
-    if not isinstance(nb, int) or nb < 1:
+    if not (isinstance(nb, int) and nb >= 1):
         raise ValueError("'nb' must be positive integer")
     if not dense_idx:
         dense_idx = [(i, i) for i in range(nb)]
 
-    B = numpy.full((nb, nb), None)
-    m, n = obj.shape
+    A = BlockLowRank(numpy.full((nb, nb), None))
+    rstep = obj.shape[0] // nb
+    cstep = obj.shape[1] // nb
 
-    rslices = [m // nb for _ in range(nb - 1)]
-    rslices.append(m // nb + m % nb)
-    rslices = numpy.array(rslices, dtype=numpy.int)
-    cslices = [n // nb for _ in range(nb - 1)]
-    cslices.append(n // nb + n % nb)
-    cslices = numpy.array(cslices, dtype=numpy.int)
-
-    for i, j in numpy.ndindex(B.shape):
-        rstart, rend = rslices[:i].sum(), rslices[:i + 1].sum()
-        cstart, cend = cslices[:j].sum(), cslices[:j + 1].sum()
+    for i, j in numpy.ndindex(A.nb):
+        rstart = rstep * i
+        rend = rstep * (i + 1) if i < nb - 1 else obj.shape[0]
+        cstart = cstep * j
+        cend = cstep * (j + 1) if j < nb - 1 else obj.shape[1]
 
         if (i, j) in dense_idx:
-            B[i, j] = Dense(obj[rstart:rend, cstart:cend])
+            A[i, j] = Dense(obj[rstart:rend, cstart:cend])
         else:
-            B[i, j] = LowRank(obj[rstart:rend, cstart:cend], method, eps, rank)
+            A[i, j] = LowRank(obj[rstart:rend, cstart:cend], method, eps, rank)
 
-    return BlockLowRank(B)
+    return A
