@@ -68,9 +68,9 @@ def _blr_tsqr(obj):
         if isinstance(A[i, 0], core.LowRank):
             rstart = rend
             rend = rend + A[i, 0].rank
-            L = Q[i, 0]
-            R = Qb[rstart:rend, :]
-            Q[i, 0] = core.LowRank((L, R), A[i, 0].method, A[i, 0].eps)
+            U = Q[i, 0]
+            V = Qb[rstart:rend, :]
+            Q[i, 0] = core.LowRank((U, V), A[i, 0].method, A[i, 0].eps)
         else:
             rstart = rend
             rend = rend + A[i, 0].shape[0]
