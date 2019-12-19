@@ -345,17 +345,19 @@ class LowRank(object):
         Arguments:
             obj (array_like, tuple of array_like): 2 dimensinal array object
                 for low-rank matrix. If you choose,
-                    1. ``array_like``
-                        you get the appriximation of this object.
-                    2. ``tuple of array_like``
-                        you get the LR matrix which have left matrix
-                        ``tuple[0]`` and right matrix ``tuple[1]``.
+
+                1. ``array_like``
+                    you get the appriximation of this object.
+                2. ``tuple of array_like``
+                    you get the LR matrix which have left matrix
+                    ``tuple[0]`` and right matrix ``tuple[1]``.
             method (str, optional): A method name for low-rank approximation.
                 You can choose it from following list.
-                    1. ``'svd'``
-                        Singular Value Decomposition Method.
-                    2. ``'aca'``
-                        Adaptive Cross Approximation.
+
+                1. ``'svd'``
+                    Singular Value Decomposition Method.
+                2. ``'aca'``
+                    Adaptive Cross Approximation.
             eps (float, optional): Numerical value for controlling accuracy.
             rank (int, optional): Numerical rank for fixed rank approximation.
         """
@@ -578,6 +580,7 @@ class BlockLowRank(object):
     ToDo:
         * The implementation of attribute ``I``.
     """
+
     def __init__(self, obj):
         """Initialize self.
 
@@ -760,7 +763,7 @@ class BlockLowRank(object):
 
     def copy(self):
         """Return a copy of self.
-        
+
         Returns:
             BlockLowRank: A copy of self.
         """
@@ -768,7 +771,7 @@ class BlockLowRank(object):
 
     def to_dense(self):
         """Return self as ``Dense`` object.
-        
+
         Returns:
             Dense: Self as ``Dense`` object.
         """
@@ -783,10 +786,11 @@ def build(obj, nb, method="svd", eps=None, rank=None, dense_idx=None):
         nb (int): A number of blocks.
         method (str, optional): A approximation method name.
             You can choose it from following list.
-                1. ``'svd'``
-                    Singular Value Decomposition Method.
-                2. ``'aca'``
-                    Adaptive Cross Approximation.
+
+            1. ``'svd'``
+                Singular Value Decomposition Method.
+            2. ``'aca'``
+                Adaptive Cross Approximation.
         eps (float, optional): Numerical value for controlling accuracy.
         rank (int, optional): Numerical rank for fixed rank approximation.
         dense_idx (list, optional): This is a list of tuple which specifies
@@ -802,8 +806,7 @@ def build(obj, nb, method="svd", eps=None, rank=None, dense_idx=None):
 
         >>> import blrlib as bl
         >>> import numpy as np
-        >>> A = np.fromfunction(lambda i, j: 1 / (np.abs(i - j) + 1),
-                                (1000, 1000))
+        >>> A = np.fromfunction(lambda i, j: 1 / (np.abs(i - j) + 1), (1000, 1000))
         >>> X = bl.build(A, 4, "svd", eps=1e-4)
         >>> print(X)
         BlockLowRank(1000, 1000)
