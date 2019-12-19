@@ -7,21 +7,14 @@ def truncated_svd(obj, eps=None, rank=None):
     """Return two matrices approximated by using truncated singular
     value decomposition.
 
-    Parameters
-    ----------
-    obj: array_like
-        A Dense object which is of array_like.
-    eps: float, default None
-        Numerical value for adaptive rank approximation.
-    rank: int, default None
-        Numerical rank for fixed rank approximation.
+    Arguments:
+        obj (array_like): 2 dimensinal array object.
+        eps (float, optional): Numerical value for adaptive rank approximation.
+        rank (int, optional): Numerical rank for fixed rank approximation.
 
-    Returns
-    -------
-    U: Dense
-        A left Dense of LowRank.
-    V: Dense
-        A right Dense of LowRank.
+    Returns:
+        Dense: A left matrix of ``LowRank`` object.
+        Dense: A right matrix of ``LowRank`` object.
     """
     if rank:
         return _truncated_svd_fixed(obj, rank)
@@ -56,21 +49,14 @@ def aca(obj, eps=None, rank=None):
     """Return two matrices approximated by using adaptive cross
     approximation.
 
-    Parameters
-    ----------
-    obj: array_like
-        A Dense object which is of array_like.
-    eps: float, default None
-        Numerical value for adaptive rank approximation.
-    rank: int, default None
-        Numerical rank for fixed rank approximation.
+    Arguments:
+        obj (array_like): 2 dimensinal array object.
+        eps (float, optional): Numerical value for adaptive rank approximation.
+        rank (int, optional): Numerical rank for fixed rank approximation.
 
-    Returns
-    -------
-    U: Dense
-        A left Dense of LowRank.
-    V: Dense
-        A right Dense of LowRank.
+    Returns:
+        Dense: A left matrix of ``LowRank`` object.
+        Dense: A right matrix of ``LowRank`` object.
     """
     if rank:
         return _aca_fixed(obj, rank)
@@ -157,17 +143,12 @@ def _aca_fixed(obj, rank):
 def _argmax_from_exclusion(a, indices):
     """Return argmax of 1D array excluding the indices you specified.
 
-    Parameters
-    ----------
-    a: array_like
-        1 dimensional array_like object.
-    indices: set
-        The index set you want to exclude.
+    Arguments:
+        a (array_like): 1 dimensional array object.
+        indices (set): The index set you want to exclude.
 
-    Returns
-    -------
-    index: int
-        Argmax from exclusion.
+    Returns:
+        int: Argmax from the exclusion.
     """
     for index in numpy.array(a).argsort()[::-1]:
         if index not in indices:

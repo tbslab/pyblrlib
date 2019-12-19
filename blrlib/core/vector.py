@@ -5,39 +5,28 @@ from .. import core
 
 
 class Vector(object):
-    """A Vector object utilizing a numpy.ndarray object.
+    """A Vector object utilizing a ``numpy.ndarray`` object.
 
-    Attributes
-    ----------
-    t: Vector
-        Transpose of self.
-    size: int
-        Size of self.
-    shape: tuple of int
-        Shape of self.
-    nbytes: int
-        total bytes consumed by the elements of self.
+    Attributes:
+        T (Vector): Transpose of self.
+        size (int): Size of self.
+        shape (tuple): Shape of self.
+        nbytes (int): Total bytes consumed by the elements of self.
 
-    Examples
-    --------
-    Make the Vector instance.
+    Examples:
+        Generate the ``Vector`` instance.
 
-    >>> import blrlib as bl
-    >>> a = bl.Vector([1, 2, 3])
-    >>> a 
-    Vector
-    [[1]
-     [2]
-     [3]]
+        >>> import blrlib as bl
+        >>> a = bl.Vector([1, 2, 3])
+        >>> print(a)
+        Vector(3)
     """
 
     def __init__(self, obj):
         """Initialize self.
 
-        Parameters
-        ----------
-        obj: array_like
-            1 or 2 dimensional array object.
+        Arguments:
+            obj (array_like): 1 or 2 dimensional array object.
         """
         self._v = numpy.array(obj)
 
@@ -53,23 +42,25 @@ class Vector(object):
             raise TypeError("valid type instances must be set")
 
     @property
-    def t(self):
-        """Return transpose of the Vector."""
+    def T(self):
+        """``Vector``: Return transpose of the vector."""
         return Vector(self._v.T)
 
     @property
     def size(self):
-        """Return size of the Vector."""
+        """``int``: Return size of the vector."""
         return self._v.size
 
     @property
     def shape(self):
-        """Return shape of the Vector."""
+        """``tuple``: Return shape of the vector."""
         return self._v.shape
 
     @property
     def nbytes(self):
-        """Return total bytes consumed by the elements of the Vector."""
+        """``int``: Return total bytes consumed by the elements of
+        the vector.
+        """
         return self._v.nbytes
 
     def __repr__(self):

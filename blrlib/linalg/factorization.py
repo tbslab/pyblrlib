@@ -4,19 +4,14 @@ from .. import core
 
 
 def qr(obj):
-    """Return QR factorization for BlockLowRank or Dense object.
+    """Return QR factorization for ``BlockLowRank`` or ``Dense`` object.
 
-    Parameters
-    ----------
-    obj: BlockLowRank or Dense
-        A matrix to be factorized.
+    Arguments:
+        obj (BlockLowRank or Dense): A matrix to be factorized.
 
-    Returns
-    -------
-    Q: BlockLowRank or Dense
-        A Dense with orthonormal columns.
-    R: BlockLowRank or Dense
-        The upper triangular Dense.
+    Returns:
+        BlockLowRank or Dense: A matrix with orthonormal columns.
+        BlockLowRank or Dense: The upper triangular matrix.
     """
     if isinstance(obj, (core.Dense, numpy.ndarray)):
         Q, R = numpy.linalg.qr(obj)
@@ -27,20 +22,15 @@ def qr(obj):
 
 
 def _blr_tsqr(obj):
-    """Return Tall-Skinny QR factorization for BLR matrices.
+    """Return tall-skinny QR factorization for BLR matrices.
 
-    Parameters
-    ----------
-    obj: BlockLowRank
-        A matrix to be factorized. The block shape must be (nb, 1).
+    Arguments:
+        obj (BlockLowRank): A matrix to be factorized. The block shape
+        must be (nb, 1).
 
-    Returns
-    -------
-    Q: BlockLowRank
-        A BLR matrix with orthonormal columns.
-        objects.
-    R: Dense
-        The upper triangular matrix.
+    Returns:
+        BlockLowRank: A BLR matrix with orthonormal columns.
+        Dense: The upper triangular matrix.
     """
     nb = obj.nb[0]
     A = obj
@@ -82,17 +72,12 @@ def _blr_tsqr(obj):
 def _blr_mbgs(obj):
     """Return Modified block Gram-Schmidt algorithm for BLR matrices.
 
-    Parameters
-    ----------
-    obj: BlockLowRank
-        A matrix to be factorized.
+    Arguments:
+        obj (BlockLowRank): A matrix to be factorized.
 
-    Returns
-    -------
-    Q: BlockLowRank
-        A BLR matrix with orthonormal columns.
-    R: BlockLowRank
-        The upper triangular BLR matrix.
+    Returns:
+        BlockLowRank: A BLR matrix with orthonormal columns.
+        BlockLowRank: The upper triangular BLR matrix.
     """
     rnb, cnb = obj.nb
     min_nb = min(obj.nb)

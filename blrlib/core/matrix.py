@@ -8,32 +8,25 @@ from .. import linalg
 class Zero(object):
     """A zero matrix object.
 
-    Attributes
-    ----------
-    T: Zero
-        Transpose of self.
-    shape: tuple of int
-        Shape of self.
-    nbytes: int
-        total bytes consumed by the elements of self.
+    Attributes:
+        T (Zero): Transpose of self.
+        shape (tuple): Shape of self.
+        nbytes (int): Total bytes consumed by the elements of self.
 
-    Examples
-    --------
-    Make the Zero instance.
+    Examples:
+        Generate the ``Zero`` instance.
 
-    >>> import blrlib as bl
-    >>> A = bl.Zero((2, 2))
-    >>> print(A)
-    Zero(2x2)
+        >>> import blrlib as bl
+        >>> A = bl.Zero((2, 2))
+        >>> print(A)
+        Zero(2, 2)
     """
 
     def __init__(self, shape):
         """Initialize self.
 
-        Parameters
-        ----------
-        shape: tuple of int
-            A matrix shape.
+        Arguments:
+            shape (tuple): A matrix shape.
         """
         self._shape = shape
 
@@ -42,17 +35,19 @@ class Zero(object):
 
     @property
     def T(self):
-        """Return transpose of the zero matrix."""
+        """``Zero``: Return transpose of the zero matrix."""
         return Zero((self._shape[1], self._shape[0]))
 
     @property
     def shape(self):
-        """Return shape of the zero matrix."""
+        """``tuple``: Return shape of the zero matrix."""
         return self._shape
 
     @property
     def nbytes(self):
-        """Return total bytes consumed by the elements of the zero matrix."""
+        """``int``: Return total bytes consumed by the elements of
+        the zero matrix.
+        """
         return 0
 
     def __repr__(self):
@@ -139,38 +134,28 @@ class Zero(object):
 
 
 class Dense(object):
-    """A dense matrix object utilizing a numpy.ndarray object.
+    """A dense matrix object utilizing a ``numpy.ndarray`` object.
 
-    Attributes
-    ----------
-    T: Dense
-        Transpose of self.
-    I: Dense
-        The (multiplicative) inverse of invertible self.
-    shape: tuple of int
-        Shape of self.
-    nbytes: int
-        total bytes consumed by the elements of self.
+    Attributes:
+        T (Dense): Transpose of self.
+        I (Dense): The inverse of invertible self.
+        shape (tuple): Shape of self.
+        nbytes (int): Total bytes consumed by the elements of self.
 
-    Examples
-    --------
-    Make the Dense instance.
+    Examples:
+        Generate the ``Dense`` instance.
 
-    >>> import blrlib as bl
-    >>> A = bl.Dense([[1, 2], [3, 4]])
-    >>> A
-    Dense
-    [[1, 2],
-     [3, 4]]
+        >>> import blrlib as bl
+        >>> A = bl.Dense([[1, 2], [3, 4]])
+        >>> A
+        Dense(2, 2)
     """
 
     def __init__(self, obj):
         """Initialize self.
 
-        Parameters
-        ----------
-        obj: array_like
-            2 dimensional array object.
+        Arguments:
+            obj (array_like): 2 dimensional array object.
         """
         self._m = numpy.array(obj)
 
@@ -181,22 +166,24 @@ class Dense(object):
 
     @property
     def T(self):
-        """Return transpose of the matrix."""
+        """``Dense``: Return transpose of the matrix."""
         return Dense(self._m.T)
 
     @property
     def I(self):
-        """Returns the (multiplicative) inverse of invertible self."""
+        """``Dense``: Returns the inverse of invertible self."""
         return Dense(numpy.linalg.inv(self._m))
 
     @property
     def shape(self):
-        """Return shape of the matrix."""
+        """``tuple``: Return shape of the matrix."""
         return self._m.shape
 
     @property
     def nbytes(self):
-        """Return total bytes consumed by the elements of the matrix."""
+        """``int``: Return total bytes consumed by the elements of
+        the matrix.
+        """
         return self._m.nbytes
 
     def __repr__(self):
@@ -330,68 +317,47 @@ class Dense(object):
 
 
 class LowRank(object):
-    """A low rank (LR) matrix object.
+    """A low-rank (LR) matrix object.
 
-    Attributes
-    ----------
-    U: Dense
-        Left matrix of self as Dense object.
-    V: Dense
-        Right matrix of self as Dense object.
-    T: LowRank
-        Transpose of self.
-    shape: tuple of int
-        Shape of self.
-    nbytes: int
-        total bytes consumed by the elements of self.
-    eps: float or None
-        Numerical value for controlled accuracy.
-    rank: int
-        Numerical rank for fixed rank approximation.
-    method: str
-        A method name for low rank approximation.
+    Attributes:
+        U (Dense): Left matrix of self.
+        V (Dense): Right matrix of self.
+        T (LowRank): Transpose of self.
+        shape (tuple): Shape of self.
+        nbytes (int): Total bytes consumed by the elements of self.
+        eps (float): Numerical value for controlling accuracy.
+        rank (int): Numerical rank for fixed rank approximation.
+        method (str): A method name for low rank approximation.
 
-    Examples
-    --------
-    Make the LowRank instance using SVD method.
+    Examples:
+        Generate the ``LowRank`` instance using SVD method.
 
-    >>> import blrlib as bl
-    >>> A = bl.Dense([[1, 2], [3, 4]])
-    >>> X = bl.LowRank(A, method="svd", rank=1)
-    >>> X
-    LowRank
-    left
-    [[-2.21087956]
-     [-4.99780755]]
-    right
-    [[-0.57604844 -0.81741556]]
+        >>> import blrlib as bl
+        >>> A = bl.Dense([[1, 2], [3, 4]])
+        >>> X = bl.LowRank(A, method="svd", rank=1)
+        >>> print(X)
+        LowRank(2, 2, 1)
     """
 
     def __init__(self, obj, method="svd", eps=None, rank=None):
         """Initialize self.
 
-        Parameters
-        ----------
-        obj: array_like or tuple of array_like
-            If you choose,
-
-            1. array_like
-                you get the appriximation of this object.
-            2. tuple of array_like
-                you get the LR matrix which have left matrix:tuple[0] and
-                right matrix:tuple[1].
-        method: str, default 'svd'
-            A method name for low rank approximation. You can choose it
-            from following list.
-
-            1. 'svd'
-                Singular Value Decomposition Method.
-            2. 'aca'
-                Adaptive Cross Approximation.
-        eps: float, default None
-            Numerical value for controlled accuracy.
-        rank: int, default None
-            Numerical rank for fixed rank approximation.
+        Arguments:
+            obj (array_like, tuple of array_like): 2 dimensinal array object
+                for low-rank matrix. If you choose,
+                    1. ``array_like``
+                        you get the appriximation of this object.
+                    2. ``tuple of array_like``
+                        you get the LR matrix which have left matrix
+                        ``tuple[0]`` and right matrix ``tuple[1]``.
+            method (str, optional): A method name for low-rank approximation.
+                You can choose it from following list.
+                    1. ``'svd'``
+                        Singular Value Decomposition Method.
+                    2. ``'aca'``
+                        Adaptive Cross Approximation.
+            eps (float, optional): Numerical value for controlling accuracy.
+            rank (int, optional): Numerical rank for fixed rank approximation.
         """
         self._eps = eps
         self._method = method
@@ -412,42 +378,46 @@ class LowRank(object):
 
     @property
     def U(self):
-        """Return left matrix as Dense object."""
+        """``Dense``: Return left matrix of the LR matrix"""
         return self._lm
 
     @property
     def V(self):
-        """Return right matrix as Dense object."""
+        """``Dense``: Return right matrix of the LR matrix"""
         return self._rm
 
     @property
     def T(self):
-        """Return transpose of the LR matrix."""
+        """``LowRank``: Return transpose of the LR matrix."""
         return LowRank((self._rm.T, self._lm.T), self._method, self._eps)
 
     @property
     def shape(self):
-        """Return shape of the LR matrix."""
+        """``tuple``: Return shape of the LR matrix."""
         return (self._lm.shape[0], self._rm.shape[1])
 
     @property
     def nbytes(self):
-        """Return total bytes consumed by the elements of the LR matrix."""
+        """``int``: Return total bytes consumed by the elements of the LR
+        matrix.
+        """
         return self._lm.nbytes + self._rm.nbytes
 
     @property
     def rank(self):
-        """Return numerical rank of the LR matrix."""
+        """``int``: Return numerical rank of the LR matrix."""
         return self._lm.shape[1]
 
     @property
     def eps(self):
-        """Return numerical value for controlling approximation accuracy."""
+        """``float``: Return numerical value for controlling approximation
+        accuracy.
+        """
         return self._eps
 
     @property
     def method(self):
-        """Return method name for low rank approximation."""
+        """``str``: Return method name for low-rank approximation."""
         return self._method
 
     def __repr__(self):
@@ -593,34 +563,27 @@ class LowRank(object):
 
 
 class BlockLowRank(object):
-    """A block low rank (BLR) matrix object.
+    """A block low-rank (BLR) matrix object.
 
-    Attributes
-    ----------
-    T: BlockLowRank
-        Transpose of self.
-    I: BlockLowRank
-        The (multiplicative) inverse of invertible self.
-    shape: tuple of int
-        Shape of self.
-    nb: tuple of int
-        number of blocks of self.
-    nbytes: int
-        total bytes consumed by the elements of self.
+    Attributes:
+        T (BlockLowRank): Transpose of self.
+        I (BlockLowRank): The inverse of invertible self.
+        shape (tuple): Shape of self.
+        nb (tuple): Number of blocks of self.
+        nbytes (int): Total bytes consumed by the elements of self.
 
-    See also
-    --------
-    build_blrmatrix: Generate a BlockLowRank instance.
+    See also:
+        ``build``: Function for building the ``BlockLowRank`` instance.
+
+    ToDo:
+        * The implementation of attribute ``I``.
     """
-
     def __init__(self, obj):
         """Initialize self.
 
-        Parameters
-        ----------
-        obj: array_like
-            2 dimensional array object. Each element must be either
-            Dense, LowRank or Zero object.
+        Arguments:
+            obj (array_like): 2 dimensional array object. Each element must
+                be either ``Dense``, ``LowRank``, ``Zero``, ``None`` object.
         """
         self._b = numpy.array(obj, dtype=object)
 
@@ -632,7 +595,7 @@ class BlockLowRank(object):
 
     @property
     def T(self):
-        """Return transpose of the BLR matrix."""
+        """``BlockLowRank``: Return transpose of the BLR matrix."""
         B = numpy.full(self._b.T.shape, None)
 
         for i, j in numpy.ndindex(self._b.shape):
@@ -642,12 +605,12 @@ class BlockLowRank(object):
 
     @property
     def I(self):
-        """Returns the (multiplicative) inverse of invertible self."""
+        """``BlockLowRank``: Returns the inverse of invertible self."""
         return NotImplemented
 
     @property
     def shape(self):
-        """Return shape of the BLR matrix"""
+        """``tuple``: Return shape of the BLR matrix"""
         rows, cols = 0, 0
 
         for i in range(self._b.shape[0]):
@@ -659,13 +622,16 @@ class BlockLowRank(object):
 
     @property
     def nb(self):
-        """Return number of blocks of the BLR matrix"""
+        """``tuple``: Return number of blocks of the BLR matrix"""
         return self._b.shape
 
     @property
     def nbytes(self):
-        """Return total bytes consumed by the elements of the BLR matrix."""
-        return sum(self._b[index].nbytes for index in numpy.ndindex(self._b.shape))
+        """``int``: Return total bytes consumed by the elements of
+        the BLR matrix.
+        """
+        return sum(self._b[index].nbytes
+                   for index in numpy.ndindex(self._b.shape))
 
     def __repr__(self):
         """Return the official string representation of this object."""
@@ -793,59 +759,63 @@ class BlockLowRank(object):
         return self._b
 
     def copy(self):
-        """Return a copy of self."""
+        """Return a copy of self.
+        
+        Returns:
+            BlockLowRank: A copy of self.
+        """
         return BlockLowRank(self._b.copy())
 
     def to_dense(self):
-        """Return self as Dense object."""
+        """Return self as ``Dense`` object.
+        
+        Returns:
+            Dense: Self as ``Dense`` object.
+        """
         return Dense(numpy.block(self._b.tolist()))
 
 
 def build(obj, nb, method="svd", eps=None, rank=None, dense_idx=None):
     """Return block low rank (BLR) Matrix.
 
-    Parameters
-    ----------
-    obj: array_like
-        2 dimensional array object.
-    nb: int
-        A number of blocks.
-    method: str, default 'svd' 
-        A approximation method name. You can choose it from following
-        list.
-        1. 'svd'
-            Singular Value Decomposition Method.
-        2. 'aca'
-            Adaptive Cross Approximation.
-    eps: float, default None
-        Numerical value for controlled accuracy.
-    rank: int, default None
-        Numerical rank for fixed rank approximation.
-    dense_idx: list of tuple, default None 
-        This is a list of tuple which specifies which block index should
-        be Dense object. If you do not give this parameter, only the block
-        diagonals are to be Dense object.
+    Arguments:
+        obj (array_like): 2 dimensional array object.
+        nb (int): A number of blocks.
+        method (str, optional): A approximation method name.
+            You can choose it from following list.
+                1. ``'svd'``
+                    Singular Value Decomposition Method.
+                2. ``'aca'``
+                    Adaptive Cross Approximation.
+        eps (float, optional): Numerical value for controlling accuracy.
+        rank (int, optional): Numerical rank for fixed rank approximation.
+        dense_idx (list): This is a list of tuple which specifies which
+            block index should be ``Dense`` object. If you do not give this
+            argument, only the block diagonals are to be ``Dense`` object.
 
-    Returns
-    -------
-    BlockLowRank :
-        BLR matrix satisfying the conditions you gave.
+    Returns:
+        BlockLowRank: BLR matrix satisfying the conditions you gave.
 
-    Examples
-    --------
-    You can generate the BLR matrix which has LR matrices
-    at non-diagonals as following.
+    Examples:
+        You can generate the BLR matrix which has LR matrices at
+        non-diagonals as following.
 
-    >>> from scipy.linalg import hilbert
-    >>> import blrlib as bl
-    >>> X = bl.build_blrmatrix(hilbert(1000), nb=4, method="svd", eps=1e-4)
-    >>> print(X)
-    BlockLowRank(4x4)
-    (0, 0): Dense(250x250)
-    (0, 1): LowRank(250x250, 3)
-    (0, 2): LowRank(250x250, 2)
-    ...
-    (3, 3): Dense(250x250)
+        >>> import blrlib as bl
+        >>> import numpy as np
+        >>> A = np.fromfunction(lambda i, j: 1 / (np.abs(i - j) + 1),
+                                (1000, 1000))
+        >>> X = bl.build(A, 4, "svd", eps=1e-4)
+        >>> print(X)
+        BlockLowRank(1000, 1000)
+        (0, 0): Dense(333, 333)
+        (0, 1): LowRank(333, 333, 8)
+        (0, 2): LowRank(333, 334, 3)
+        (1, 0): LowRank(333, 333, 8)
+        (1, 1): Dense(333, 333)
+        (1, 2): LowRank(333, 334, 8)
+        (2, 0): LowRank(334, 333, 3)
+        (2, 1): LowRank(334, 333, 8)
+        (2, 2): Dense(334, 334)
     """
     if not isinstance(obj, numpy.ndarray):
         obj = numpy.array(obj)

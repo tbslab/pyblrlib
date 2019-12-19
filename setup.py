@@ -22,7 +22,6 @@ setup(
     description="The Package for Block Low Rank Matrix Computations.",
     long_description=readme,
     author="tbs-lab",
-    author_email="tsubasa.i.0516@gmail.com",
     url="https://tbs-lab.github.io",
     packages=find_packages(exclude=("tests", "docs")),
     install_requires=["numpy"],
