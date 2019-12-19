@@ -789,9 +789,9 @@ def build(obj, nb, method="svd", eps=None, rank=None, dense_idx=None):
                     Adaptive Cross Approximation.
         eps (float, optional): Numerical value for controlling accuracy.
         rank (int, optional): Numerical rank for fixed rank approximation.
-        dense_idx (list): This is a list of tuple which specifies which
-            block index should be ``Dense`` object. If you do not give this
-            argument, only the block diagonals are to be ``Dense`` object.
+        dense_idx (list, optional): This is a list of tuple which specifies
+            which block index should be ``Dense`` object. If you do not give
+            this argument, only the block diagonals are to be ``Dense`` object.
 
     Returns:
         BlockLowRank: BLR matrix satisfying the conditions you gave.
